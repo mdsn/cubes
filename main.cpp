@@ -7,15 +7,6 @@
 #include<fstream>
 #include<string>
 
-// puppycat square
-//float vertices[] = {
-//    // X      Y     Z     R     G     B     U     V
-//    -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-//    0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-//    0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-//    -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f
-//};
-
 // puppycat cube
 GLfloat vxCube[] = {
         -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
@@ -80,8 +71,11 @@ GLfloat vxQuad[] = {
 };
 
 GLuint load_texture(const GLchar *path);
-void create_shader_program(GLuint &vertexShader, GLuint &fragmentShader, GLuint& shaderProgram);
-void specify_vertex_attributes(GLuint shader_program);
+void create_shader_program(
+        const char *pathVertex, const char *pathFragment,
+        GLuint &vertexShader, GLuint &fragmentShader, GLuint& shaderProgram);
+void specify_cube_vertex_attributes(GLuint shader_program);
+void specify_quad_vertex_attributes(GLuint shader_program);
 
 std::string read_shader(const char *filename);
 
@@ -107,18 +101,19 @@ int main() {
         return -3;
     }
 
-    glEnable(GL_DEPTH_TEST);
+    // Create a vertex array object for each framebuffer
+    GLuint vaoCube, vaoQuad;
+    glGenVertexArrays(1, &vaoCube);
+    glGenVertexArrays(1, &vaoQuad);
 
-    // Create a vertex array object
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    // Create a vertex buffer object and copy the vertex data to it
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    // Create a vertex buffer object per framebuffer and copy the vertex data to it
+    GLuint vboCube, vboQuad;
+    glGenBuffers(1, &vboCube);
+    glGenBuffers(1, &vboQuad);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCube);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vxCube), vxCube, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vboQuad);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vxQuad), vxQuad, GL_STATIC_DRAW);
 
 //    GLuint elements[] = {
 //        0, 1, 2,
@@ -129,22 +124,60 @@ int main() {
 //    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 //    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-    // Create and compile the vertex and fragment shaders
-    GLuint vertex_shader, fragment_shader, shader_program;
-    create_shader_program(vertex_shader, fragment_shader, shader_program);
+    // Create and compile the vertex and fragment shaders for the cube and quad
+    GLuint cubeVertexShader, cubeFragmentShader, cubeShaderProgram;
+    create_shader_program(
+            "shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl",
+            cubeVertexShader, cubeFragmentShader, cubeShaderProgram);
 
-    // Load textures
-    glActiveTexture(GL_TEXTURE0);
-    GLuint texCat = load_texture("resources/cat.png");
-    glActiveTexture(GL_TEXTURE1);
-    GLuint texPup = load_texture("resources/pup.png");
+    GLuint quadVertexShader, quadFragmentShader, quadShaderProgram;
+    create_shader_program(
+            "shaders/quadVertex.glsl", "shaders/quadFragment.glsl",
+            quadVertexShader, quadFragmentShader, quadShaderProgram);
 
     // Specify the layout of the vertex data
-    specify_vertex_attributes(shader_program);
+    glBindVertexArray(vaoCube);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCube);
+    specify_cube_vertex_attributes(cubeShaderProgram);
 
-    glUseProgram(shader_program);
-    glUniform1i(glGetUniformLocation(shader_program, "texKitten"), 0);
-    glUniform1i(glGetUniformLocation(shader_program, "texPuppy"), 1);
+    glBindVertexArray(vaoQuad);
+    glBindBuffer(GL_ARRAY_BUFFER, vboQuad);
+    specify_quad_vertex_attributes(quadShaderProgram);
+
+    // Load textures
+    GLuint texCat = load_texture("resources/cat.png");
+    GLuint texPup = load_texture("resources/pup.png");
+
+    glUseProgram(cubeShaderProgram);
+    glUniform1i(glGetUniformLocation(cubeShaderProgram, "texKitten"), 0);
+    glUniform1i(glGetUniformLocation(cubeShaderProgram, "texPuppy"), 1);
+
+    GLint uniModel = glGetUniformLocation(cubeShaderProgram, "model");
+
+    glUseProgram(quadShaderProgram);
+    glUniform1i(glGetUniformLocation(quadShaderProgram, "texFramebuffer"), 0);
+
+    // Create a framebuffer for rendering on the side
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    // Data texture to hold color buffer
+    GLuint texColorBuffer;
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Attach image to framebuffer
+    glad_glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+    // Create renderbuffer object
+    GLuint rboDepthStencil;
+    glGenRenderbuffers(1, &rboDepthStencil);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthStencil);
 
     // View transformation
     // glm::lookAt : The first parameter specifies the position of the camera,
@@ -153,41 +186,38 @@ int main() {
     glm::mat4 view = glm::lookAt(glm::vec3(2.5f, 2.5f, 2.5f),
                                  glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(0.0f, 0.0f, 1.0f));
-    GLint uniView = glGetUniformLocation(shader_program, "view");
+
+    glUseProgram(cubeShaderProgram);
+
+    GLint uniView = glGetUniformLocation(cubeShaderProgram, "view");
     glad_glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 
-    GLint globalTime = glGetUniformLocation(shader_program, "globalTime");
+    // Perspective projection matrix
+    // glm::perspective : The first parameter is the vertical field-of-view,
+    // the second parameter the aspect ratio of the screen and the last two parameters
+    // are the near and far planes.
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 10.0f);
+    GLint uniProj = glGetUniformLocation(cubeShaderProgram, "proj");
+    glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+
+    // Global time uniform
+    GLint globalTime = glGetUniformLocation(cubeShaderProgram, "globalTime");
     auto t_start = std::chrono::high_resolution_clock::now();
 
-    GLint uniColor = glGetUniformLocation(shader_program, "overrideColor");
-
-//    // Create a framebuffer for rendering on the side
-//    GLuint framebuffer;
-//    glGenFramebuffers(1, &framebuffer);
-//    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-//
-//    // Data texture image to render to
-//    GLuint texColorBuffer;
-//    glGenTextures(1, &texColorBuffer);
-//    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//    // Attach image to framebuffer
-//    glad_glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-//
-//    // Create renderbuffer object
-//    GLuint rboDepthStencil;
-//    glGenRenderbuffers(1, &rboDepthStencil);
-//    glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil);
-//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
-//    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthStencil);
-//
-//    // Go back to the default framebuffer
-//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GLint uniColor = glGetUniformLocation(cubeShaderProgram, "overrideColor");
 
     while (!glfwWindowShouldClose(window)) {
+        // Bind framebuffer and draw 3D scene with cube
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glBindVertexArray(vaoCube);
+        glEnable(GL_DEPTH_TEST);
+        glUseProgram(cubeShaderProgram);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texCat);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texPup);
+
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -198,19 +228,9 @@ int main() {
         // A 2D transformation
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, time * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        GLint uniModel = glGetUniformLocation(shader_program, "model");
-        glad_glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 
-        // Perspective projection matrix
-        // glm::perspective : The first parameter is the vertical field-of-view,
-        // the second parameter the aspect ratio of the screen and the last two parameters
-        // are the near and far planes.
-        glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 10.0f);
-        GLint uniProj = glGetUniformLocation(shader_program, "proj");
-        glad_glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
-
-//         If we were using the ebo:
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+//         If we were using the ebo: glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 //         But we're not:
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -241,6 +261,17 @@ int main() {
 
         glDisable(GL_STENCIL_TEST);
 
+        // Bind default framebuffer and draw contents of the framebuffer we just drew to
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindVertexArray(vaoQuad);
+        glDisable(GL_DEPTH_TEST);
+        glUseProgram(quadShaderProgram);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
 
@@ -248,19 +279,21 @@ int main() {
             glfwSetWindowShouldClose(window, GL_TRUE);
     }
 
-//    glDeleteRenderbuffers(1, &rboDepthStencil);
-//    glDeleteTextures(1, &texColorBuffer);
-//    glDeleteFramebuffers(1, &framebuffer);
+    glDeleteRenderbuffers(1, &rboDepthStencil);
+    glDeleteTextures(1, &texColorBuffer);
+    glDeleteFramebuffers(1, &framebuffer);
 
     glDeleteTextures(1, &texPup);
     glDeleteTextures(1, &texCat);
 
-    glDeleteProgram(shader_program);
-    glDeleteShader(fragment_shader);
-    glDeleteShader(vertex_shader);
+    glDeleteProgram(cubeShaderProgram);
+    glDeleteShader(cubeFragmentShader);
+    glDeleteShader(cubeVertexShader);
 
-    glDeleteBuffers(1, &vbo);
-    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vboCube);
+    glDeleteBuffers(1, &vboQuad);
+    glDeleteVertexArrays(1, &vaoCube);
+    glDeleteVertexArrays(1, &vaoQuad);
 
     glfwTerminate();
     return 0;
@@ -286,19 +319,21 @@ GLuint load_texture(const GLchar *path)
 }
 
 void create_shader_program(
+        const char *pathVertex,
+        const char *pathFragment,
         GLuint &vertexShader,
         GLuint &fragmentShader,
         GLuint& shaderProgram
 ) {
     // Create and compile the vertex and fragment shaders
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    std::string vertex_src = read_shader("shaders/vertex.glsl");
+    std::string vertex_src = read_shader(pathVertex);
     const char *cstr = vertex_src.c_str();
     glShaderSource(vertexShader, 1, &cstr, NULL);
     glCompileShader(vertexShader);
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    std::string frag_src = read_shader("shaders/fragment.glsl");
+    std::string frag_src = read_shader(pathFragment);
     const char *frag_cstr = frag_src.c_str();
     glShaderSource(fragmentShader, 1, &frag_cstr, NULL);
     glCompileShader(fragmentShader);
@@ -310,7 +345,7 @@ void create_shader_program(
     glLinkProgram(shaderProgram);
 }
 
-void specify_vertex_attributes(GLuint shader_program)
+void specify_cube_vertex_attributes(GLuint shader_program)
 {
     GLint posAttrib = glGetAttribLocation(shader_program, "position");
     glEnableVertexAttribArray(posAttrib);
@@ -325,6 +360,17 @@ void specify_vertex_attributes(GLuint shader_program)
     glEnableVertexAttribArray(texAttrib);
     glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE,
                           8*sizeof(float), (void*)(6*sizeof(float)));
+}
+
+void specify_quad_vertex_attributes(GLuint shader_program)
+{
+    GLint posAttrib = glGetAttribLocation(shader_program, "position");
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+
+    GLint texAttrib = glGetAttribLocation(shader_program, "texcoord");
+    glEnableVertexAttribArray(texAttrib);
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
 }
 
 std::string read_shader(const char *filename)
