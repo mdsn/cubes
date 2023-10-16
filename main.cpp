@@ -17,7 +17,7 @@
 //};
 
 // puppycat cube
-GLfloat vertices[] = {
+GLfloat vxCube[] = {
         -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
         0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
         0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
@@ -69,6 +69,20 @@ GLfloat vertices[] = {
         -1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 };
 
+GLfloat vxQuad[] = {
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        1.0f,  1.0f,  1.0f, 1.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+
+        1.0f, -1.0f,  1.0f, 0.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+        -1.0f,  1.0f,  0.0f, 1.0f
+};
+
+GLuint load_texture(const GLchar *path);
+void create_shader_program(GLuint &vertexShader, GLuint &fragmentShader, GLuint& shaderProgram);
+void specify_vertex_attributes(GLuint shader_program);
+
 std::string read_shader(const char *filename);
 
 int main() {
@@ -104,101 +118,33 @@ int main() {
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vxCube), vxCube, GL_STATIC_DRAW);
 
-    GLuint elements[] = {
-        0, 1, 2,
-        2, 3, 0
-    };
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+//    GLuint elements[] = {
+//        0, 1, 2,
+//        2, 3, 0
+//    };
+//    GLuint ebo;
+//    glGenBuffers(1, &ebo);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
     // Create and compile the vertex and fragment shaders
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    std::string vertex_src = read_shader("shaders/vertex.glsl");
-    const char *cstr = vertex_src.c_str();
-    glShaderSource(vertex_shader, 1, &cstr, NULL);
-    glCompileShader(vertex_shader);
-    GLint status;
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
-    if (status != GL_TRUE) {
-        glfwTerminate();
-        return -4;
-    }
-
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    std::string frag_src = read_shader("shaders/fragment.glsl");
-    const char *frag_cstr = frag_src.c_str();
-    glShaderSource(fragment_shader, 1, &frag_cstr, NULL);
-    glCompileShader(fragment_shader);
-    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &status);
-    if (status != GL_TRUE) {
-        glfwTerminate();
-        return -5;
-    }
-
-    // Link the vertex and fragment shaders into a shader program
-    GLuint shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glBindFragDataLocation(shader_program, 0, "outColor");
-    glLinkProgram(shader_program);
-    glUseProgram(shader_program);
-
-    // Specify the layout of the vertex data
-    GLint posAttrib = glGetAttribLocation(shader_program, "position");
-    glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
-
-    GLint colAttrib = glGetAttribLocation(shader_program, "color");
-    glEnableVertexAttribArray(colAttrib);
-    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
-                          8*sizeof(float), (void*)(3*sizeof(float)));
-
-    GLint texAttrib = glGetAttribLocation(shader_program, "texcoord");
-    glEnableVertexAttribArray(texAttrib);
-    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE,
-                          8*sizeof(float), (void*)(6*sizeof(float)));
+    GLuint vertex_shader, fragment_shader, shader_program;
+    create_shader_program(vertex_shader, fragment_shader, shader_program);
 
     // Load textures
-    GLuint textures[2];
-    glGenTextures(2, textures);
-    // Cat texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    GLuint cat = SOIL_load_OGL_texture(
-            "resources/cat.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
-            SOIL_FLAG_MIPMAPS|SOIL_FLAG_NTSC_SAFE_RGB|SOIL_FLAG_COMPRESS_TO_DXT
-    );
-    if (!cat) {
-        glfwTerminate();
-        return -6;
-    }
-    glUniform1i(glGetUniformLocation(shader_program, "texKitten"), 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    // Pup texture
+    GLuint texCat = load_texture("resources/cat.png");
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    GLuint pup = SOIL_load_OGL_texture(
-            "resources/pup.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
-            SOIL_FLAG_MIPMAPS|SOIL_FLAG_NTSC_SAFE_RGB|SOIL_FLAG_COMPRESS_TO_DXT
-    );
-    if (!pup) {
-        glfwTerminate();
-        return -7;
-    }
+    GLuint texPup = load_texture("resources/pup.png");
+
+    // Specify the layout of the vertex data
+    specify_vertex_attributes(shader_program);
+
+    glUseProgram(shader_program);
+    glUniform1i(glGetUniformLocation(shader_program, "texKitten"), 0);
     glUniform1i(glGetUniformLocation(shader_program, "texPuppy"), 1);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glGenerateMipmap(GL_TEXTURE_2D);
 
     // View transformation
     // glm::lookAt : The first parameter specifies the position of the camera,
@@ -214,6 +160,32 @@ int main() {
     auto t_start = std::chrono::high_resolution_clock::now();
 
     GLint uniColor = glGetUniformLocation(shader_program, "overrideColor");
+
+//    // Create a framebuffer for rendering on the side
+//    GLuint framebuffer;
+//    glGenFramebuffers(1, &framebuffer);
+//    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+//
+//    // Data texture image to render to
+//    GLuint texColorBuffer;
+//    glGenTextures(1, &texColorBuffer);
+//    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//
+//    // Attach image to framebuffer
+//    glad_glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+//
+//    // Create renderbuffer object
+//    GLuint rboDepthStencil;
+//    glGenRenderbuffers(1, &rboDepthStencil);
+//    glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil);
+//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+//    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthStencil);
+//
+//    // Go back to the default framebuffer
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -237,8 +209,9 @@ int main() {
         GLint uniProj = glGetUniformLocation(shader_program, "proj");
         glad_glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
-
+//         If we were using the ebo:
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+//         But we're not:
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glEnable(GL_STENCIL_TEST);
@@ -275,8 +248,83 @@ int main() {
             glfwSetWindowShouldClose(window, GL_TRUE);
     }
 
+//    glDeleteRenderbuffers(1, &rboDepthStencil);
+//    glDeleteTextures(1, &texColorBuffer);
+//    glDeleteFramebuffers(1, &framebuffer);
+
+    glDeleteTextures(1, &texPup);
+    glDeleteTextures(1, &texCat);
+
+    glDeleteProgram(shader_program);
+    glDeleteShader(fragment_shader);
+    glDeleteShader(vertex_shader);
+
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
+
     glfwTerminate();
     return 0;
+}
+
+GLuint load_texture(const GLchar *path)
+{
+    GLuint texture;
+    glGenTextures(1, &texture);
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    SOIL_load_OGL_texture(
+            path, SOIL_LOAD_AUTO, texture,
+            SOIL_FLAG_MIPMAPS|SOIL_FLAG_NTSC_SAFE_RGB|SOIL_FLAG_COMPRESS_TO_DXT
+    );
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    return texture;
+}
+
+void create_shader_program(
+        GLuint &vertexShader,
+        GLuint &fragmentShader,
+        GLuint& shaderProgram
+) {
+    // Create and compile the vertex and fragment shaders
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    std::string vertex_src = read_shader("shaders/vertex.glsl");
+    const char *cstr = vertex_src.c_str();
+    glShaderSource(vertexShader, 1, &cstr, NULL);
+    glCompileShader(vertexShader);
+
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    std::string frag_src = read_shader("shaders/fragment.glsl");
+    const char *frag_cstr = frag_src.c_str();
+    glShaderSource(fragmentShader, 1, &frag_cstr, NULL);
+    glCompileShader(fragmentShader);
+
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glBindFragDataLocation(shaderProgram, 0, "outColor");
+    glLinkProgram(shaderProgram);
+}
+
+void specify_vertex_attributes(GLuint shader_program)
+{
+    GLint posAttrib = glGetAttribLocation(shader_program, "position");
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
+
+    GLint colAttrib = glGetAttribLocation(shader_program, "color");
+    glEnableVertexAttribArray(colAttrib);
+    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
+                          8*sizeof(float), (void*)(3*sizeof(float)));
+
+    GLint texAttrib = glGetAttribLocation(shader_program, "texcoord");
+    glEnableVertexAttribArray(texAttrib);
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE,
+                          8*sizeof(float), (void*)(6*sizeof(float)));
 }
 
 std::string read_shader(const char *filename)
@@ -286,3 +334,4 @@ std::string read_shader(const char *filename)
                     (std::istreambuf_iterator<char>()));
     return res;
 }
+
