@@ -60,22 +60,11 @@ GLfloat vxCube[] = {
         -1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 };
 
-GLfloat vxQuad[] = {
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        1.0f,  1.0f,  1.0f, 1.0f,
-        1.0f, -1.0f,  1.0f, 0.0f,
-
-        1.0f, -1.0f,  1.0f, 0.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-        -1.0f,  1.0f,  0.0f, 1.0f
-};
-
 GLuint load_texture(const GLchar *path);
 void create_shader_program(
         const char *pathVertex, const char *pathFragment,
         GLuint &vertexShader, GLuint &fragmentShader, GLuint& shaderProgram);
 void specify_cube_vertex_attributes(GLuint shader_program);
-void specify_quad_vertex_attributes(GLuint shader_program);
 
 std::string read_shader(const char *filename);
 
@@ -102,18 +91,15 @@ int main() {
     }
 
     // Create a vertex array object for each framebuffer
-    GLuint vaoCube, vaoQuad;
+    GLuint vaoCube;
     glGenVertexArrays(1, &vaoCube);
-    glGenVertexArrays(1, &vaoQuad);
+    glBindVertexArray(vaoCube);
 
     // Create a vertex buffer object per framebuffer and copy the vertex data to it
-    GLuint vboCube, vboQuad;
+    GLuint vboCube;
     glGenBuffers(1, &vboCube);
-    glGenBuffers(1, &vboQuad);
     glBindBuffer(GL_ARRAY_BUFFER, vboCube);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vxCube), vxCube, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, vboQuad);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vxQuad), vxQuad, GL_STATIC_DRAW);
 
 //    GLuint elements[] = {
 //        0, 1, 2,
@@ -124,60 +110,31 @@ int main() {
 //    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 //    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-    // Create and compile the vertex and fragment shaders for the cube and quad
+    // Create and compile the vertex and fragment shaders
     GLuint cubeVertexShader, cubeFragmentShader, cubeShaderProgram;
     create_shader_program(
             "shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl",
             cubeVertexShader, cubeFragmentShader, cubeShaderProgram);
-
-    GLuint quadVertexShader, quadFragmentShader, quadShaderProgram;
-    create_shader_program(
-            "shaders/quadVertex.glsl", "shaders/quadFragment.glsl",
-            quadVertexShader, quadFragmentShader, quadShaderProgram);
 
     // Specify the layout of the vertex data
     glBindVertexArray(vaoCube);
     glBindBuffer(GL_ARRAY_BUFFER, vboCube);
     specify_cube_vertex_attributes(cubeShaderProgram);
 
-    glBindVertexArray(vaoQuad);
-    glBindBuffer(GL_ARRAY_BUFFER, vboQuad);
-    specify_quad_vertex_attributes(quadShaderProgram);
-
     // Load textures
     GLuint texCat = load_texture("resources/cat.png");
     GLuint texPup = load_texture("resources/pup.png");
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texCat);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texPup);
 
     glUseProgram(cubeShaderProgram);
     glUniform1i(glGetUniformLocation(cubeShaderProgram, "texKitten"), 0);
     glUniform1i(glGetUniformLocation(cubeShaderProgram, "texPuppy"), 1);
 
     GLint uniModel = glGetUniformLocation(cubeShaderProgram, "model");
-
-    glUseProgram(quadShaderProgram);
-    glUniform1i(glGetUniformLocation(quadShaderProgram, "texFramebuffer"), 0);
-
-    // Create a framebuffer for rendering on the side
-    GLuint framebuffer;
-    glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-    // Data texture to hold color buffer
-    GLuint texColorBuffer;
-    glGenTextures(1, &texColorBuffer);
-    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // Attach image to framebuffer
-    glad_glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-
-    // Create renderbuffer object
-    GLuint rboDepthStencil;
-    glGenRenderbuffers(1, &rboDepthStencil);
-    glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthStencil);
 
     // View transformation
     // glm::lookAt : The first parameter specifies the position of the camera,
@@ -187,10 +144,8 @@ int main() {
                                  glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(0.0f, 0.0f, 1.0f));
 
-    glUseProgram(cubeShaderProgram);
-
     GLint uniView = glGetUniformLocation(cubeShaderProgram, "view");
-    glad_glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 
     // Perspective projection matrix
     // glm::perspective : The first parameter is the vertical field-of-view,
@@ -206,18 +161,8 @@ int main() {
 
     GLint uniColor = glGetUniformLocation(cubeShaderProgram, "overrideColor");
 
+    glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
-        // Bind framebuffer and draw 3D scene with cube
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        glBindVertexArray(vaoCube);
-        glEnable(GL_DEPTH_TEST);
-        glUseProgram(cubeShaderProgram);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texCat);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texPup);
-
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -261,27 +206,12 @@ int main() {
 
         glDisable(GL_STENCIL_TEST);
 
-        // Bind default framebuffer and draw contents of the framebuffer we just drew to
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glBindVertexArray(vaoQuad);
-        glDisable(GL_DEPTH_TEST);
-        glUseProgram(quadShaderProgram);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
         glfwSwapBuffers(window);
         glfwPollEvents();
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GL_TRUE);
     }
-
-    glDeleteRenderbuffers(1, &rboDepthStencil);
-    glDeleteTextures(1, &texColorBuffer);
-    glDeleteFramebuffers(1, &framebuffer);
 
     glDeleteTextures(1, &texPup);
     glDeleteTextures(1, &texCat);
@@ -291,9 +221,7 @@ int main() {
     glDeleteShader(cubeVertexShader);
 
     glDeleteBuffers(1, &vboCube);
-    glDeleteBuffers(1, &vboQuad);
     glDeleteVertexArrays(1, &vaoCube);
-    glDeleteVertexArrays(1, &vaoQuad);
 
     glfwTerminate();
     return 0;
@@ -360,17 +288,6 @@ void specify_cube_vertex_attributes(GLuint shader_program)
     glEnableVertexAttribArray(texAttrib);
     glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE,
                           8*sizeof(float), (void*)(6*sizeof(float)));
-}
-
-void specify_quad_vertex_attributes(GLuint shader_program)
-{
-    GLint posAttrib = glGetAttribLocation(shader_program, "position");
-    glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-
-    GLint texAttrib = glGetAttribLocation(shader_program, "texcoord");
-    glEnableVertexAttribArray(texAttrib);
-    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
 }
 
 std::string read_shader(const char *filename)
