@@ -125,27 +125,17 @@ int main() {
     GLuint texCat = load_texture("resources/cat.png");
     GLuint texPup = load_texture("resources/pup.png");
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texCat);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texPup);
+    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, texCat);
+    glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, texPup);
 
     glUseProgram(cubeShaderProgram);
     glUniform1i(glGetUniformLocation(cubeShaderProgram, "texKitten"), 0);
     glUniform1i(glGetUniformLocation(cubeShaderProgram, "texPuppy"), 1);
 
-    GLint uniModel = glGetUniformLocation(cubeShaderProgram, "model");
-
-    // View transformation
-    // glm::lookAt : The first parameter specifies the position of the camera,
-    //  the second the point to be centered on-screen and the third the up axis.
-    //  Here up is defined as the Z axis, which implies that the XY plane is the "ground".
-    glm::mat4 view = glm::lookAt(glm::vec3(2.5f, 2.5f, 2.5f),
-                                 glm::vec3(0.0f, 0.0f, 0.0f),
-                                 glm::vec3(0.0f, 0.0f, 1.0f));
-
-    GLint uniView = glGetUniformLocation(cubeShaderProgram, "view");
-    glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+    // Camera parameters
+    glm::vec3 cameraPos = glm::vec3(2.5f, 2.5f, 2.5f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
 
     // Perspective projection matrix
     // glm::perspective : The first parameter is the vertical field-of-view,
@@ -160,20 +150,41 @@ int main() {
     auto t_start = std::chrono::high_resolution_clock::now();
 
     GLint uniColor = glGetUniformLocation(cubeShaderProgram, "overrideColor");
+    GLint uniModel = glGetUniformLocation(cubeShaderProgram, "model");
 
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
+        // Update elapsed time
+        auto t_now = std::chrono::high_resolution_clock::now();
+        float elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+        glUniform1f(globalTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
+
+        glfwPollEvents();
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, GL_TRUE);
+            break;
+        }
+
+        glm::vec3 viewDirection = glm::normalize(cameraTarget - cameraPos);
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { cameraPos.z += 0.1f; }
+        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) { cameraPos.z -= 0.1f; }
+        cameraTarget += viewDirection;
+
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto t_now = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-        glUniform1f(globalTime, (sin(time * 4.0f) + 1.0f) / 2.0f);
-
         // A 2D transformation
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, time * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, elapsedTime * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+
+        // View transformation
+        // glm::lookAt : The first parameter specifies the position of the camera,
+        //  the second the point to be centered on-screen and the third the up axis.
+        //  Here up is defined as the Z axis, which implies that the XY plane is the "ground".
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        GLint uniView = glGetUniformLocation(cubeShaderProgram, "view");
+        glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 
 //         If we were using the ebo: glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 //         But we're not:
@@ -207,10 +218,6 @@ int main() {
         glDisable(GL_STENCIL_TEST);
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
-
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, GL_TRUE);
     }
 
     glDeleteTextures(1, &texPup);
