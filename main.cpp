@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include<fstream>
+#include<iostream>
 #include<string>
 
 // puppycat cube
@@ -60,6 +61,9 @@ GLfloat vxCube[] = {
         -1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 };
 
+const float width = 800.0f;
+const float height = 600.0f;
+
 GLuint load_texture(const GLchar *path);
 void create_shader_program(
         const char *pathVertex, const char *pathFragment,
@@ -67,6 +71,42 @@ void create_shader_program(
 void specify_cube_vertex_attributes(GLuint shader_program);
 
 std::string read_shader(const char *filename);
+
+// Cursor position
+double cx{0}, cy{0};
+void cursor_update(GLFWwindow *window, double x, double y) { cx = x; cy = y; }
+
+struct Camera {
+    glm::vec3 pos{0.0f};
+    glm::vec3 target{0.0f, 0.0f, 0.0f};
+    glm::vec3 up{0.0f, 0.0f, 1.0f};
+
+    double px{0}, py{0};
+    float yaw{0}, pitch{0};
+
+    Camera(glm::vec3 cPos) : pos(cPos), px(cx), py(cy) {}
+
+    void update() {
+        float dx = px - cx; px = cx;
+        float dy = py - cy; py = cy;
+        yaw += dx / 10.0f;
+        pitch += dy / 10.0f;
+        pitch = glm::clamp(pitch, -60.0f, 70.0f);
+    }
+
+    glm::vec3 direction() {
+        return glm::normalize(target - pos);
+    }
+
+    glm::mat4 view() {
+        // View transformation
+        update();
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -glm::radians(yaw), glm::vec3(0.0f, 0.0f, 1.0f));
+        rotation = glm::rotate(rotation, -glm::radians(pitch), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::vec3 center = pos + make_vec3(make_vec4(direction()) * rotation);
+        return glm::lookAt(pos, center, up);
+    }
+};
 
 int main() {
     if (!glfwInit())
@@ -78,11 +118,15 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow *window = glfwCreateWindow(640, 480, "brix", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(width, height, "brix", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -2;
     }
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    glfwSetCursorPosCallback(window, cursor_update);
 
     glfwMakeContextCurrent(window);
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -133,15 +177,13 @@ int main() {
     glUniform1i(glGetUniformLocation(cubeShaderProgram, "texPuppy"), 1);
 
     // Camera parameters
-    glm::vec3 cameraPos = glm::vec3(2.5f, 2.5f, 2.5f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
+    Camera camera{glm::vec3{2.5f}};
 
     // Perspective projection matrix
     // glm::perspective : The first parameter is the vertical field-of-view,
     // the second parameter the aspect ratio of the screen and the last two parameters
     // are the near and far planes.
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 10.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), width / height, 1.0f, 10.0f);
     GLint uniProj = glGetUniformLocation(cubeShaderProgram, "proj");
     glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
@@ -154,6 +196,7 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
+
         // Update elapsed time
         auto t_now = std::chrono::high_resolution_clock::now();
         float elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
@@ -165,29 +208,23 @@ int main() {
             break;
         }
 
-        glm::vec3 viewDirection = glm::normalize(cameraTarget - cameraPos);
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { cameraPos.z += 0.1f; }
-        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) { cameraPos.z -= 0.1f; }
-        cameraTarget += viewDirection;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {}
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {}
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // A 2D transformation
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, elapsedTime * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+        // Spin the cube
+//        model = glm::rotate(model, 0.5f * elapsedTime * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        // View transformation
-        // glm::lookAt : The first parameter specifies the position of the camera,
-        //  the second the point to be centered on-screen and the third the up axis.
-        //  Here up is defined as the Z axis, which implies that the XY plane is the "ground".
-        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 view = camera.view();
         GLint uniView = glGetUniformLocation(cubeShaderProgram, "view");
         glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 
 //         If we were using the ebo: glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-//         But we're not:
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glEnable(GL_STENCIL_TEST);
