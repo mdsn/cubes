@@ -188,50 +188,46 @@ int main() {
 
     //   --------------- Floor -----------------
 
-//    GLuint vaoFloor;
-//    glGenVertexArrays(1, &vaoFloor);
-//    glBindVertexArray(vaoFloor);
-//
-//    GLuint vboFloor;
-//    glGenBuffers(1, &vboFloor);
-//    glBindBuffer(GL_ARRAY_BUFFER, vboFloor);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vxFloor), vxFloor, GL_STATIC_DRAW);
-//
-//    GLuint elements[] = {
-//            0, 1, 3,
-//            1, 2, 3,
-//    };
-//    GLuint ebo;
-//    glGenBuffers(1, &ebo);
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
-//
-//    // Create and compile the vertex and fragment shaders
-//    GLuint floorVertexShader, floorFragmentShader, floorShaderProgram;
-//    create_shader_program("shaders/floorVertex.glsl", "shaders/floorFragment.glsl",
-//                          floorVertexShader, floorFragmentShader, floorShaderProgram);
-//
-//    // Specify the layout of the vertex data
-//    glUseProgram(floorShaderProgram);
-//    specify_floor_vertex_attributes(floorShaderProgram);
-//
-//    // floorplane uniforms
-//    GLint uniFloorProj = glGetUniformLocation(floorShaderProgram, "proj");
-//    GLint uniFloorModel = glGetUniformLocation(floorShaderProgram, "model");
-//    GLint uniFloorView = glGetUniformLocation(floorShaderProgram, "view");
-//
-//    glUseProgram(floorShaderProgram);
-//    glUniformMatrix4fv(glGetUniformLocation(floorShaderProgram, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
+    GLuint vaoFloor;
+    glGenVertexArrays(1, &vaoFloor);
+    glBindVertexArray(vaoFloor);
+
+    GLuint vboFloor;
+    glGenBuffers(1, &vboFloor);
+    glBindBuffer(GL_ARRAY_BUFFER, vboFloor);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vxFloor), vxFloor, GL_STATIC_DRAW);
+
+    GLuint elements[] = {
+            0, 1, 3,
+            1, 2, 3,
+    };
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+
+    // Create and compile the vertex and fragment shaders
+    GLuint floorVertexShader, floorFragmentShader, floorShaderProgram;
+    create_shader_program("shaders/floorVertex.glsl", "shaders/floorFragment.glsl",
+                          floorVertexShader, floorFragmentShader, floorShaderProgram);
+
+    // Specify the layout of the vertex data
+    glUseProgram(floorShaderProgram);
+    specify_floor_vertex_attributes(floorShaderProgram);
+
+    // floorplane uniforms
+    GLint uniFloorModel = glGetUniformLocation(floorShaderProgram, "model");
+    GLint uniFloorView = glGetUniformLocation(floorShaderProgram, "view");
+
+    glUniformMatrix4fv(glGetUniformLocation(floorShaderProgram, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
 
     // ---------------- Loop ------------------
-
     auto t_start = std::chrono::high_resolution_clock::now();
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
         // Update elapsed time
         auto t_now = std::chrono::high_resolution_clock::now();
         float elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-        glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
 
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -242,21 +238,25 @@ int main() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // A 2D transformation
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.view();
+
+        // Draw the cube
+        glUseProgram(cubeShaderProgram);
         glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
-
-        glUseProgram(cubeShaderProgram);
+        glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
         glBindVertexArray(vaoCube);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-//        glUseProgram(floorShaderProgram);
-//        glBindVertexArray(vaoFloor);
+        // Draw the floor
+        glUseProgram(floorShaderProgram);
+        glBindVertexArray(vaoFloor);
+        glUniformMatrix4fv(uniFloorModel, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(uniFloorView, 1, GL_FALSE, glm::value_ptr(view));
 //        // The second parameter specifies the number of indices to draw, the third parameter specifies
 //        // the type of the element data and the last parameter specifies the offset.
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
     }
