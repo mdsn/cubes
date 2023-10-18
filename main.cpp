@@ -82,7 +82,10 @@ std::string read_shader(const char *filename);
 
 // Cursor position
 double cx{0}, cy{0};
-void cursor_update(GLFWwindow *window, double x, double y) { cx = x; cy = y; }
+void cursor_update(GLFWwindow *window, double x, double y) {
+    std::cout << "cursor update " << x << " " << y << std::endl;
+    cx = x; cy = y;
+}
 
 struct Camera {
     glm::vec3 pos{0.0f};
@@ -134,6 +137,7 @@ int main() {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    glfwGetCursorPos(window, &cx, &cy);
     glfwSetCursorPosCallback(window, cursor_update);
 
     glfwMakeContextCurrent(window);
@@ -172,10 +176,8 @@ int main() {
     // Load textures
     GLuint texCat = load_texture("resources/cat.png");
     GLuint texPup = load_texture("resources/pup.png");
-
     glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, texCat);
     glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, texPup);
-
     glUniform1i(glGetUniformLocation(cubeShaderProgram, "texKitten"), 0);
     glUniform1i(glGetUniformLocation(cubeShaderProgram, "texPuppy"), 1);
 
