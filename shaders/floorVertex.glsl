@@ -1,9 +1,8 @@
 #version 150 core
 
-in vec2 texcoord;
 in vec3 position;
 
-out vec2 Texcoord;
+out vec3 Position;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -11,6 +10,6 @@ uniform mat4 proj;
 
 void main()
 {
-    Texcoord = texcoord;
+    Position = position;
     gl_Position = proj * view * model * vec4(position, 1.0);
 }
