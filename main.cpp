@@ -83,13 +83,11 @@ std::string read_shader(const char *filename);
 // Cursor position
 double cx{0}, cy{0};
 void cursor_update(GLFWwindow *window, double x, double y) {
-    std::cout << "cursor update " << x << " " << y << std::endl;
     cx = x; cy = y;
 }
 
 struct Camera {
     glm::vec3 pos{0.0f};
-    glm::vec3 target{0.0f, 0.0f, 1.0f};
     glm::vec3 up{0.0f, 1.0f, 0.0f};
 
     double px{0}, py{0};
@@ -107,12 +105,15 @@ struct Camera {
         pitch = glm::clamp(pitch, -89.0f, 89.0f);
     }
 
-    glm::mat4 view() {
-        update();
+    glm::vec3 front() {
         glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
         rotation = glm::rotate(rotation, -glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::vec3 front = pos + make_vec3(make_vec4(target) * rotation);
-        return glm::lookAt(pos, front, up);
+        return glm::normalize(make_vec3(glm::vec4{0.0f, 0.0f, 0.1f, 0.0f} * rotation));
+    }
+
+    glm::mat4 view() {
+        update();
+        return glm::lookAt(pos, pos + front(), up);
     }
 };
 
@@ -222,16 +223,32 @@ int main() {
 
     // ---------------- Loop ------------------
     auto t_start = std::chrono::high_resolution_clock::now();
+    auto t_now = t_start;
+    auto t_prev = t_start;
+
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
         // Update elapsed time
-        auto t_now = std::chrono::high_resolution_clock::now();
+        float t_delta = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev).count();
+
+        t_prev = t_now;
+        t_now = std::chrono::high_resolution_clock::now();
         float elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GL_TRUE);
             break;
+        }
+
+        auto speed = 5.0f * t_delta;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { camera.pos -= camera.front() * speed; }
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { camera.pos += camera.front() * speed; }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            camera.pos -= glm::normalize(glm::cross(camera.front(), camera.up)) * speed;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            camera.pos += glm::normalize(glm::cross(camera.front(), camera.up)) * speed;
         }
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
