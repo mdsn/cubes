@@ -62,10 +62,10 @@ GLfloat vxCube[] = {
 };
 
 GLfloat vxFloor[] = {
-        -10.0f, -10.0f, 0.0f,
-        -10.0f, 10.0f, 0.0f,
-        10.0f, 10.0f, 0.0f,
-        10.0f, -10.0f, 0.0f,
+        -10.0f, 0.0f, -10.0f,
+        -10.0f, 0.0f, 10.0f,
+        10.0f, 0.0f, 10.0f,
+        10.0f, 0.0f, -10.0f,
 };
 
 const float width = 800.0f;
@@ -89,8 +89,8 @@ void cursor_update(GLFWwindow *window, double x, double y) {
 
 struct Camera {
     glm::vec3 pos{0.0f};
-    glm::vec3 target{0.0f, 0.0f, 0.0f};
-    glm::vec3 up{0.0f, 0.0f, 1.0f};
+    glm::vec3 target{0.0f, 0.0f, 1.0f};
+    glm::vec3 up{0.0f, 1.0f, 0.0f};
 
     double px{0}, py{0};
     float yaw{0}, pitch{0};
@@ -98,24 +98,21 @@ struct Camera {
     Camera(glm::vec3 cPos) : pos(cPos), px(cx), py(cy) {}
 
     void update() {
-        float dx = px - cx; px = cx;
-        float dy = py - cy; py = cy;
-        yaw += dx / 10.0f;
-        pitch += dy / 10.0f;
-        pitch = glm::clamp(pitch, -60.0f, 70.0f);
-    }
-
-    glm::vec3 direction() {
-        return glm::normalize(target - pos);
+        float sensitivity = 0.1;
+        float dx = (px - cx) * sensitivity;
+        float dy = (cy - py) * sensitivity;
+        px = cx; py = cy;
+        yaw += dx;
+        pitch += dy;
+        pitch = glm::clamp(pitch, -89.0f, 89.0f);
     }
 
     glm::mat4 view() {
-        // View transformation
         update();
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -glm::radians(yaw), glm::vec3(0.0f, 0.0f, 1.0f));
-        rotation = glm::rotate(rotation, -glm::radians(pitch), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::vec3 center = pos + make_vec3(make_vec4(direction()) * rotation);
-        return glm::lookAt(pos, center, up);
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+        rotation = glm::rotate(rotation, -glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::vec3 front = pos + make_vec3(make_vec4(target) * rotation);
+        return glm::lookAt(pos, front, up);
     }
 };
 
@@ -151,7 +148,7 @@ int main() {
     //    are the near and far planes.
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), width / height, 1.0f, 10.0f);
     // Camera parameters
-    Camera camera{glm::vec3{2.5f}};
+    Camera camera{glm::vec3{2.0}};
 
     //   --------------- Cube -----------------
 
