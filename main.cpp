@@ -10,47 +10,47 @@
 
 // puppycat cube
 GLfloat vxCube[] = {
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
 };
 
 GLfloat vxFloor[] = {
@@ -64,18 +64,23 @@ const float width = 800.0f;
 const float height = 600.0f;
 
 GLuint gen_buffer(GLsizei size, GLfloat *data);
+
 GLuint load_texture(const GLchar *path);
+
 GLuint load_program(const char *pathv, const char *pathf);
 
 void specify_cube_vertex_attributes(GLuint shader_program);
+
 void specify_floor_vertex_attributes(GLuint shader_program);
 
 std::string read_shader(const char *filename);
 
 // Cursor position
 double cx{0}, cy{0};
+
 void cursor_update(GLFWwindow *window, double x, double y) {
-    cx = x; cy = y;
+    cx = x;
+    cy = y;
 }
 
 struct Camera {
@@ -91,7 +96,8 @@ struct Camera {
         float sensitivity = 0.1;
         float dx = (px - cx) * sensitivity;
         float dy = (cy - py) * sensitivity;
-        px = cx; py = cy;
+        px = cx;
+        py = cy;
         yaw += dx;
         pitch += dy;
         pitch = glm::clamp(pitch, -89.0f, 89.0f);
@@ -162,8 +168,10 @@ int main() {
     // Load textures
     GLuint texCat = load_texture("resources/cat.png");
     GLuint texPup = load_texture("resources/pup.png");
-    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, texCat);
-    glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, texPup);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texCat);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texPup);
     glUniform1i(glGetUniformLocation(cube_program, "texKitten"), 0);
     glUniform1i(glGetUniformLocation(cube_program, "texPuppy"), 1);
 
@@ -253,8 +261,6 @@ int main() {
         glBindVertexArray(vaoFloor);
         glUniformMatrix4fv(uniFloorModel, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(uniFloorView, 1, GL_FALSE, glm::value_ptr(view));
-//        // The second parameter specifies the number of indices to draw, the third parameter specifies
-//        // the type of the element data and the last parameter specifies the offset.
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
@@ -273,15 +279,14 @@ int main() {
     return 0;
 }
 
-GLuint load_texture(const GLchar *path)
-{
+GLuint load_texture(const GLchar *path) {
     GLuint texture;
     glGenTextures(1, &texture);
 
     glBindTexture(GL_TEXTURE_2D, texture);
     SOIL_load_OGL_texture(
             path, SOIL_LOAD_AUTO, texture,
-            SOIL_FLAG_MIPMAPS|SOIL_FLAG_NTSC_SAFE_RGB|SOIL_FLAG_COMPRESS_TO_DXT
+            SOIL_FLAG_MIPMAPS | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
     );
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -292,22 +297,15 @@ GLuint load_texture(const GLchar *path)
     return texture;
 }
 
-
-void specify_cube_vertex_attributes(GLuint shader_program)
-{
+void specify_cube_vertex_attributes(GLuint shader_program) {
     GLint posAttrib = glGetAttribLocation(shader_program, "position");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
-
-//    GLint colAttrib = glGetAttribLocation(shader_program, "color");
-//    glEnableVertexAttribArray(colAttrib);
-//    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
-//                          8*sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
 
     GLint texAttrib = glGetAttribLocation(shader_program, "texcoord");
     glEnableVertexAttribArray(texAttrib);
     glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE,
-                          8*sizeof(float), (void*)(6*sizeof(float)));
+                          5 * sizeof(float), (void *) (3 * sizeof(float)));
 }
 
 void specify_floor_vertex_attributes(GLuint shader_program) {
@@ -329,15 +327,13 @@ GLuint gen_buffer(GLsizei size, GLfloat *data) {
 
 // ---------------- shader stuff ----------------
 
-std::string read_file(const char *path)
-{
+std::string read_file(const char *path) {
     std::ifstream ifs(path);
     std::string res((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
     return res;
 }
 
-GLuint make_shader(GLenum type, const char *source)
-{
+GLuint make_shader(GLenum type, const char *source) {
     GLuint name = glCreateShader(type);
     glShaderSource(name, 1, &source, NULL);
     glCompileShader(name);
@@ -354,14 +350,12 @@ GLuint make_shader(GLenum type, const char *source)
     return name;
 }
 
-GLuint load_shader(GLenum type, const char *path)
-{
+GLuint load_shader(GLenum type, const char *path) {
     std::string source = read_file(path);
     return make_shader(type, source.c_str());
 }
 
-GLuint make_program(GLuint vsh, GLuint fsh)
-{
+GLuint make_program(GLuint vsh, GLuint fsh) {
     GLuint name = glCreateProgram();
     glAttachShader(name, vsh);
     glAttachShader(name, fsh);
