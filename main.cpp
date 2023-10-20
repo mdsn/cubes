@@ -53,13 +53,6 @@ GLfloat vxCube[] = {
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
 };
 
-GLfloat vxFloor[] = {
-        -10.0f, 0.0f, -10.0f,
-        -10.0f, 0.0f, 10.0f,
-        10.0f, 0.0f, 10.0f,
-        10.0f, 0.0f, -10.0f,
-};
-
 const float width = 800.0f;
 const float height = 600.0f;
 
@@ -70,10 +63,6 @@ GLuint load_texture(const GLchar *path);
 GLuint load_program(const char *pathv, const char *pathf);
 
 void specify_cube_vertex_attributes(GLuint shader_program);
-
-void specify_floor_vertex_attributes(GLuint shader_program);
-
-std::string read_shader(const char *filename);
 
 // Cursor position
 double cx{0}, cy{0};
@@ -182,36 +171,6 @@ int main() {
 
     glUniformMatrix4fv(glGetUniformLocation(cube_program, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
 
-    //   --------------- Floor -----------------
-
-    GLuint vaoFloor;
-    glGenVertexArrays(1, &vaoFloor);
-    glBindVertexArray(vaoFloor);
-
-    GLuint vboFloor = gen_buffer(sizeof(vxFloor), vxFloor);
-
-    GLuint elements[] = {
-            0, 1, 3,
-            1, 2, 3,
-    };
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
-
-    GLuint floor_program = load_program("shaders/floorVertex.glsl", "shaders/floorFragment.glsl");
-
-    // Specify the layout of the vertex data
-    glUseProgram(floor_program);
-    glBindBuffer(GL_ARRAY_BUFFER, vboFloor);
-    specify_floor_vertex_attributes(floor_program);
-
-    // floorplane uniforms
-    GLint uniFloorModel = glGetUniformLocation(floor_program, "model");
-    GLint uniFloorView = glGetUniformLocation(floor_program, "view");
-
-    glUniformMatrix4fv(glGetUniformLocation(floor_program, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
-
     // ---------------- Loop ------------------
     auto t_start = std::chrono::high_resolution_clock::now();
     auto t_now = t_start;
@@ -256,13 +215,6 @@ int main() {
         glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        // Draw the floor
-        glUseProgram(floor_program);
-        glBindVertexArray(vaoFloor);
-        glUniformMatrix4fv(uniFloorModel, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(uniFloorView, 1, GL_FALSE, glm::value_ptr(view));
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
         glfwSwapBuffers(window);
     }
 
@@ -270,7 +222,6 @@ int main() {
     glDeleteTextures(1, &texCat);
 
     glDeleteProgram(cube_program);
-    glDeleteProgram(floor_program);
 
     glDeleteBuffers(1, &vboCube);
     glDeleteVertexArrays(1, &vaoCube);
@@ -306,12 +257,6 @@ void specify_cube_vertex_attributes(GLuint shader_program) {
     glEnableVertexAttribArray(texAttrib);
     glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE,
                           5 * sizeof(float), (void *) (3 * sizeof(float)));
-}
-
-void specify_floor_vertex_attributes(GLuint shader_program) {
-    GLint posAttrib = glGetAttribLocation(shader_program, "position");
-    glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 // ------------------ gl stuff -------------------
