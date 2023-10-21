@@ -11,7 +11,7 @@
 const float width = 800.0f;
 const float height = 600.0f;
 
-std::vector<GLfloat> make_cube(float x, float y, float z);
+void make_cube(std::vector<GLfloat>& vec, float x, float y, float z);
 GLuint gen_buffer(GLsizei size, GLfloat *data);
 
 GLuint load_texture(const GLchar *path);
@@ -102,10 +102,12 @@ int main() {
     glBindVertexArray(vaoCube);
 
     // Create a vertex buffer object per framebuffer and copy the vertex data to it
-    auto cube = make_cube(0, 0, 0);
+    std::vector<GLfloat> vec;
+    make_cube(vec, 0, 0, 0);
+    make_cube(vec, 1, 0, 0);
 
 //    GLuint vboCube = gen_buffer(sizeof(vxCube), vxCube);
-    GLuint vboCube = gen_buffer(cube.size() * sizeof(GLfloat), cube.data());
+    GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
     GLuint cube_program = load_program("shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl");
 
     glUseProgram(cube_program);
@@ -172,7 +174,8 @@ int main() {
         glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
         glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 72);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
     }
@@ -191,7 +194,7 @@ int main() {
 
 // --------------- cube --------------------
 
-std::vector<GLfloat> make_cube(float x, float y, float z) {
+void make_cube(std::vector<GLfloat>& vec, float x, float y, float z) {
 #define FACES 6
     const float n{0.5};
     // 6 faces, 4 vertices per face, 3 components per vertex
@@ -222,19 +225,16 @@ std::vector<GLfloat> make_cube(float x, float y, float z) {
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
     };
 
-    std::vector<GLfloat> cube;
     for (int i = 0; i < FACES; i++) {
         for (int j = 0; j < 6; j++) {
             int ix = indices[i][j];
-            cube.push_back(x + n * positions[i][ix][0]);
-            cube.push_back(y + n * positions[i][ix][1]);
-            cube.push_back(z + n * positions[i][ix][2]);
-            cube.push_back(uv[i][ix][0]);
-            cube.push_back(uv[i][ix][1]);
+            vec.push_back(x + n * positions[i][ix][0]);
+            vec.push_back(y + n * positions[i][ix][1]);
+            vec.push_back(z + n * positions[i][ix][2]);
+            vec.push_back(uv[i][ix][0]);
+            vec.push_back(uv[i][ix][1]);
         }
     }
-
-    return cube;
 }
 
 // ------------------ gl stuff -------------------
