@@ -11,7 +11,8 @@
 const float width = 800.0f;
 const float height = 600.0f;
 
-void make_cube(std::vector<GLfloat>& vec, float x, float y, float z);
+void make_cube(std::vector<GLfloat> &vec, float x, float y, float z);
+
 GLuint gen_buffer(GLsizei size, GLfloat *data);
 
 GLuint load_texture(const GLchar *path);
@@ -46,6 +47,7 @@ struct Camera {
 };
 
 struct State {
+    bool render_wireframe = false;
     GLFWwindow *window;
     Camera camera{glm::vec3{0, 0, -3.0}};
 };
@@ -70,6 +72,23 @@ void handle_mouse_input() {
     }
 }
 
+void handle_motion_input(double dt) {
+    float speed = 5.0 * dt;
+    if (glfwGetKey(g.window, GLFW_KEY_W)) { g.camera.pos += g.camera.front() * speed; }
+    if (glfwGetKey(g.window, GLFW_KEY_S)) { g.camera.pos -= g.camera.front() * speed; }
+    if (glfwGetKey(g.window, GLFW_KEY_A)) {
+        g.camera.pos -= glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
+    }
+    if (glfwGetKey(g.window, GLFW_KEY_D)) {
+        g.camera.pos += glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
+    }
+}
+
+void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (action != GLFW_PRESS) return;
+    if (key == GLFW_KEY_R) { g.render_wireframe = !g.render_wireframe; }
+}
+
 int main() {
     if (!glfwInit())
         return -1;
@@ -88,6 +107,7 @@ int main() {
 
     glfwSetInputMode(g.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(g.window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    glfwSetKeyCallback(g.window, on_key);
 
     glfwMakeContextCurrent(g.window);
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -112,7 +132,6 @@ int main() {
     make_cube(vec, 0, 0, 0);
     make_cube(vec, 1, 0, 0);
 
-//    GLuint vboCube = gen_buffer(sizeof(vxCube), vxCube);
     GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
     GLuint cube_program = load_program("shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl");
 
@@ -142,13 +161,11 @@ int main() {
     auto t_start = std::chrono::high_resolution_clock::now();
     auto t_now = t_start;
     auto t_prev = t_start;
-    bool wireframe = false;
 
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(g.window)) {
         // Update elapsed time
         float t_delta = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev).count();
-
         t_prev = t_now;
         t_now = std::chrono::high_resolution_clock::now();
         float elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
@@ -158,20 +175,9 @@ int main() {
         }
 
         handle_mouse_input();
+        handle_motion_input(t_delta);
 
-        auto speed = 5.0f * t_delta;
-        if (glfwGetKey(g.window, GLFW_KEY_S) == GLFW_PRESS) { g.camera.pos -= g.camera.front() * speed; }
-        if (glfwGetKey(g.window, GLFW_KEY_W) == GLFW_PRESS) { g.camera.pos += g.camera.front() * speed; }
-        if (glfwGetKey(g.window, GLFW_KEY_A) == GLFW_PRESS) {
-            g.camera.pos -= glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
-        }
-        if (glfwGetKey(g.window, GLFW_KEY_D) == GLFW_PRESS) {
-            g.camera.pos += glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
-        }
-        if (glfwGetKey(g.window, GLFW_KEY_R) == GLFW_PRESS) {
-            wireframe = !wireframe;
-            glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
-        }
+        glPolygonMode(GL_FRONT_AND_BACK, g.render_wireframe ? GL_LINE : GL_FILL);
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -208,20 +214,19 @@ int main() {
 
 // --------------- cube --------------------
 
-void make_cube(std::vector<GLfloat>& vec, float x, float y, float z) {
-#define FACES 6
+void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
     const float n{0.5};
     // 6 faces, 4 vertices per face, 3 components per vertex
-    const float positions[FACES][4][3]{
+    const float positions[6][4][3]{
             {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD
-            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1, -1}},    // AEHD
+            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  -1}},    // AEHD
             {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH
             {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC
             {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB
             {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC
     };
     // wind triangles counter-clockwise to face front
-    const int indices[FACES][6]{
+    const int indices[6][6]{
             {0, 3, 1, 1, 3, 2},     // ADB, BDC
             {0, 3, 1, 1, 3, 2},     // ADE, EDH
             {0, 3, 1, 1, 3, 2},     // EHF, FHG
@@ -230,7 +235,7 @@ void make_cube(std::vector<GLfloat>& vec, float x, float y, float z) {
             {1, 0, 2, 2, 0, 3}      // HDG, GDC
     };
     // texture coordinates
-    const float uv[FACES][4][2]{
+    const float uv[6][4][2]{
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
@@ -239,7 +244,7 @@ void make_cube(std::vector<GLfloat>& vec, float x, float y, float z) {
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
     };
 
-    for (int i = 0; i < FACES; i++) {
+    for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
             int ix = indices[i][j];
             vec.push_back(x + n * positions[i][ix][0]);
