@@ -20,29 +20,22 @@ GLuint load_program(const char *pathv, const char *pathf);
 
 void specify_cube_vertex_attributes(GLuint shader_program);
 
-// Cursor position
-double cx{0}, cy{0};
-
-void cursor_update(GLFWwindow *window, double x, double y) {
-    cx = x;
-    cy = y;
-}
-
 struct Camera {
     glm::vec3 pos{0.0f};
     glm::vec3 up{0.0f, 1.0f, 0.0f};
 
+    double *cx, *cy;
     double px{0}, py{0};
     float yaw{0}, pitch{0};
 
-    Camera(glm::vec3 cPos) : pos(cPos), px(cx), py(cy) {}
+    Camera(glm::vec3 cPos, double *_cx, double *_cy) : pos(cPos), cx(_cx), cy(_cy), px(*cx), py(*cy) {}
 
     void update() {
         float sensitivity = 0.1;
-        float dx = (px - cx) * sensitivity;
-        float dy = (cy - py) * sensitivity;
-        px = cx;
-        py = cy;
+        float dx = (px - *cx) * sensitivity;
+        float dy = (*cy - py) * sensitivity;
+        px = *cx;
+        py = *cy;
         yaw += dx;
         pitch += dy;
         pitch = glm::clamp(pitch, -89.0f, 89.0f);
@@ -59,6 +52,20 @@ struct Camera {
         return glm::lookAt(pos, pos + front(), up);
     }
 };
+
+struct State {
+    double cx{0}, cy{0};        // Cursor position
+    Camera camera{glm::vec3{0, 0, -3.0}, &cx, &cy};
+};
+
+// All global state
+State g;
+
+void cursor_update(GLFWwindow *window, double x, double y) {
+    g.cx = x;
+    g.cy = y;
+}
+
 
 int main() {
     if (!glfwInit())
@@ -78,7 +85,7 @@ int main() {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-    glfwGetCursorPos(window, &cx, &cy);
+    glfwGetCursorPos(window, &g.cx, &g.cy);
     glfwSetCursorPosCallback(window, cursor_update);
 
     glfwMakeContextCurrent(window);
@@ -91,8 +98,6 @@ int main() {
     //    the second parameter the aspect ratio of the screen and the last two parameters
     //    are the near and far planes.
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), width / height, 1.0f, 10.0f);
-    // Camera parameters
-    Camera camera{glm::vec3{0, 0, -3.0}};
 
     //   --------------- Cube -----------------
 
@@ -154,13 +159,13 @@ int main() {
         }
 
         auto speed = 5.0f * t_delta;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { camera.pos -= camera.front() * speed; }
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { camera.pos += camera.front() * speed; }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { g.camera.pos -= g.camera.front() * speed; }
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { g.camera.pos += g.camera.front() * speed; }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            camera.pos -= glm::normalize(glm::cross(camera.front(), camera.up)) * speed;
+            g.camera.pos -= glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            camera.pos += glm::normalize(glm::cross(camera.front(), camera.up)) * speed;
+            g.camera.pos += glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
         }
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
             wireframe = !wireframe;
@@ -171,7 +176,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = camera.view();
+        glm::mat4 view = g.camera.view();
 
         // Draw the cube
         glUseProgram(cube_program);
@@ -180,7 +185,6 @@ int main() {
         glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
         glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
         glDrawArrays(GL_TRIANGLES, 0, 72);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
     }
