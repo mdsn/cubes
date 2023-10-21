@@ -237,41 +237,39 @@ int main() {
 // --------------- cube --------------------
 
 std::vector<GLfloat> make_cube(float x, float y, float z) {
+#define FACES 2
     const float n{0.5};
     // 6 faces, 4 vertices per face, 3 components per vertex
-    const float positions[1][4][3]{
+    const float positions[FACES][4][3]{
             {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD
-//            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  1}},    // AEHD
+            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1, -1}},    // AEHD
+
 //            {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH
 //            {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC
 //            {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB
 //            {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC
     };
     // wind triangles counter-clockwise to face front
-    const int indices[1][6]{
-            {0, 1, 2, 2, 3, 0}, // ABC CDA
-//            {0, 3, 1, 1, 3, 2},     // ADB, BDC
-
-//            {0, 3, 1, 1, 3, 2},     // ADE, EDH
+    const int indices[FACES][6]{
+            {0, 3, 1, 1, 3, 2},     // ADB, BDC
+            {0, 3, 1, 1, 3, 2},     // ADE, EDH
 //            {0, 3, 1, 1, 3, 2},     // EHF, FHG
 //            {0, 3, 1, 1, 3, 2},     // BCF, FCG
 //            {1, 0, 2, 2, 0, 3},     // EAF, FAB
 //            {1, 0, 2, 2, 0, 3}      // HDG, GDC
     };
     // texture coordinates
-    const float uv[1][4][2]{
+    const float uv[FACES][4][2]{
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
-//            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+            {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
 //            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
 //            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
 //            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
 //            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
     };
 
-    const int faces = 1;
-
     std::vector<GLfloat> cube;
-    for (int i = 0; i < faces; i++) {
+    for (int i = 0; i < FACES; i++) {
         for (int j = 0; j < 6; j++) {
             int ix = indices[i][j];
             cube.push_back(x + n * positions[i][ix][0]);
