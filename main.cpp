@@ -136,6 +136,7 @@ int main() {
     auto t_start = std::chrono::high_resolution_clock::now();
     auto t_now = t_start;
     auto t_prev = t_start;
+    bool wireframe = false;
 
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
@@ -160,6 +161,10 @@ int main() {
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
             camera.pos += glm::normalize(glm::cross(camera.front(), camera.up)) * speed;
+        }
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+            wireframe = !wireframe;
+            glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
         }
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
