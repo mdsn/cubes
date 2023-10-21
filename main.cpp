@@ -17,45 +17,46 @@ GLfloat vxCube[] = {
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+//        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+//        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+//        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+//        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+//        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+//        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+//
+//        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+//        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+//        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+//        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+//        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+//        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+//
+//        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+//        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+//        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+//        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+//        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+//        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+//
+//        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+//        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+//        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+//        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+//        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+//        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+//
+//        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+//        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+//        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+//        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+//        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+//        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
 };
 
 const float width = 800.0f;
 const float height = 600.0f;
 
+std::vector<GLfloat> make_cube(float x, float y, float z);
 GLuint gen_buffer(GLsizei size, GLfloat *data);
 
 GLuint load_texture(const GLchar *path);
@@ -95,7 +96,7 @@ struct Camera {
     glm::vec3 front() {
         glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
         rotation = glm::rotate(rotation, -glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-        return glm::normalize(make_vec3(glm::vec4{0.0f, 0.0f, 0.1f, 0.0f} * rotation));
+        return glm::normalize(make_vec3(glm::vec4{0.0f, 0.0f, 1.0f, 0.0f} * rotation));
     }
 
     glm::mat4 view() {
@@ -136,7 +137,7 @@ int main() {
     //    are the near and far planes.
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), width / height, 1.0f, 10.0f);
     // Camera parameters
-    Camera camera{glm::vec3{2.0}};
+    Camera camera{glm::vec3{0, 0, -3.0}};
 
     //   --------------- Cube -----------------
 
@@ -146,7 +147,10 @@ int main() {
     glBindVertexArray(vaoCube);
 
     // Create a vertex buffer object per framebuffer and copy the vertex data to it
-    GLuint vboCube = gen_buffer(sizeof(vxCube), vxCube);
+    auto cube = make_cube(0, 0, 0);
+
+//    GLuint vboCube = gen_buffer(sizeof(vxCube), vxCube);
+    GLuint vboCube = gen_buffer(cube.size() * sizeof(GLfloat), cube.data());
     GLuint cube_program = load_program("shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl");
 
     glUseProgram(cube_program);
@@ -230,6 +234,68 @@ int main() {
     return 0;
 }
 
+// --------------- cube --------------------
+
+std::vector<GLfloat> make_cube(float x, float y, float z) {
+    const float n{0.5};
+    // 6 faces, 4 vertices per face, 3 components per vertex
+    const float positions[1][4][3]{
+            {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD
+//            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  1}},    // AEHD
+//            {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH
+//            {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC
+//            {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB
+//            {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC
+    };
+    // wind triangles counter-clockwise to face front
+    const int indices[1][6]{
+            {0, 1, 2, 2, 3, 0}, // ABC CDA
+//            {0, 3, 1, 1, 3, 2},     // ADB, BDC
+
+//            {0, 3, 1, 1, 3, 2},     // ADE, EDH
+//            {0, 3, 1, 1, 3, 2},     // EHF, FHG
+//            {0, 3, 1, 1, 3, 2},     // BCF, FCG
+//            {1, 0, 2, 2, 0, 3},     // EAF, FAB
+//            {1, 0, 2, 2, 0, 3}      // HDG, GDC
+    };
+    // texture coordinates
+    const float uv[1][4][2]{
+            {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
+//            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+//            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+//            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+//            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+//            {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+    };
+
+    const int faces = 1;
+
+    std::vector<GLfloat> cube;
+    for (int i = 0; i < faces; i++) {
+        for (int j = 0; j < 6; j++) {
+            int ix = indices[i][j];
+            cube.push_back(x + n * positions[i][ix][0]);
+            cube.push_back(y + n * positions[i][ix][1]);
+            cube.push_back(z + n * positions[i][ix][2]);
+            cube.push_back(uv[i][ix][0]);
+            cube.push_back(uv[i][ix][1]);
+        }
+    }
+
+    return cube;
+}
+
+// ------------------ gl stuff -------------------
+
+GLuint gen_buffer(GLsizei size, GLfloat *data) {
+    GLuint name;
+    glGenBuffers(1, &name);
+    glBindBuffer(GL_ARRAY_BUFFER, name);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return name;
+}
+
 GLuint load_texture(const GLchar *path) {
     GLuint texture;
     glGenTextures(1, &texture);
@@ -259,17 +325,6 @@ void specify_cube_vertex_attributes(GLuint shader_program) {
                           5 * sizeof(float), (void *) (3 * sizeof(float)));
 }
 
-// ------------------ gl stuff -------------------
-
-GLuint gen_buffer(GLsizei size, GLfloat *data) {
-    GLuint name;
-    glGenBuffers(1, &name);
-    glBindBuffer(GL_ARRAY_BUFFER, name);
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    return name;
-}
-
 // ---------------- shader stuff ----------------
 
 std::string read_file(const char *path) {
@@ -288,7 +343,7 @@ GLuint make_shader(GLenum type, const char *source) {
         GLint log_size{0};
         glGetShaderiv(name, GL_INFO_LOG_LENGTH, &log_size);
         std::vector<GLchar> log(log_size);
-        glGetShaderInfoLog(name, log_size, &log_size, &log[0]);
+        glGetShaderInfoLog(name, log_size, &log_size, log.data());
         std::string err = std::string(log.begin(), log.end());
         std::cerr << "shader compilation failed: " << err << std::endl;
     }
@@ -312,7 +367,7 @@ GLuint make_program(GLuint vsh, GLuint fsh) {
         GLint log_size{0};
         glGetProgramiv(name, GL_INFO_LOG_LENGTH, &log_size);
         std::vector<GLchar> log(log_size);
-        glGetProgramInfoLog(name, log_size, &log_size, &log[0]);
+        glGetProgramInfoLog(name, log_size, &log_size, log.data());
         std::string err = std::string(log.begin(), log.end());
         std::cerr << "program linkage failed: " << err << std::endl;
     }
