@@ -24,18 +24,11 @@ struct Camera {
     glm::vec3 pos{0.0f};
     glm::vec3 up{0.0f, 1.0f, 0.0f};
 
-    double *cx, *cy;
-    double px{0}, py{0};
     float yaw{0}, pitch{0};
 
-    Camera(glm::vec3 cPos, double *_cx, double *_cy) : pos(cPos), cx(_cx), cy(_cy), px(*cx), py(*cy) {}
+    Camera(glm::vec3 cPos) : pos(cPos) {}
 
-    void update() {
-        float sensitivity = 0.1;
-        float dx = (px - *cx) * sensitivity;
-        float dy = (*cy - py) * sensitivity;
-        px = *cx;
-        py = *cy;
+    void update(float dx, float dy) {
         yaw += dx;
         pitch += dy;
         pitch = glm::clamp(pitch, -89.0f, 89.0f);
@@ -48,24 +41,34 @@ struct Camera {
     }
 
     glm::mat4 view() {
-        update();
         return glm::lookAt(pos, pos + front(), up);
     }
 };
 
 struct State {
-    double cx{0}, cy{0};        // Cursor position
-    Camera camera{glm::vec3{0, 0, -3.0}, &cx, &cy};
+    GLFWwindow *window;
+    Camera camera{glm::vec3{0, 0, -3.0}};
 };
 
 // All global state
 State g;
 
-void cursor_update(GLFWwindow *window, double x, double y) {
-    g.cx = x;
-    g.cy = y;
+void handle_mouse_input() {
+    const float sensitivity = 0.1;
+    static double px{0};
+    static double py{0};
+    double cx, cy;
+    if (px || py) {
+        glfwGetCursorPos(g.window, &cx, &cy);
+        float dx = (px - cx) * sensitivity;
+        float dy = (cy - py) * sensitivity;
+        px = cx;
+        py = cy;
+        g.camera.update(dx, dy);
+    } else {
+        glfwGetCursorPos(g.window, &px, &py);
+    }
 }
-
 
 int main() {
     if (!glfwInit())
@@ -77,18 +80,16 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow *window = glfwCreateWindow(width, height, "brix", NULL, NULL);
-    if (!window) {
+    g.window = glfwCreateWindow(width, height, "brix", NULL, NULL);
+    if (!g.window) {
         glfwTerminate();
         return -2;
     }
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-    glfwGetCursorPos(window, &g.cx, &g.cy);
-    glfwSetCursorPosCallback(window, cursor_update);
+    glfwSetInputMode(g.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(g.window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(g.window);
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         glfwTerminate();
         return -3;
@@ -144,7 +145,7 @@ int main() {
     bool wireframe = false;
 
     glEnable(GL_DEPTH_TEST);
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(g.window)) {
         // Update elapsed time
         float t_delta = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev).count();
 
@@ -152,22 +153,22 @@ int main() {
         t_now = std::chrono::high_resolution_clock::now();
         float elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
-        glfwPollEvents();
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, GL_TRUE);
-            break;
+        if (glfwGetKey(g.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(g.window, GL_TRUE);
         }
 
+        handle_mouse_input();
+
         auto speed = 5.0f * t_delta;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { g.camera.pos -= g.camera.front() * speed; }
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { g.camera.pos += g.camera.front() * speed; }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        if (glfwGetKey(g.window, GLFW_KEY_S) == GLFW_PRESS) { g.camera.pos -= g.camera.front() * speed; }
+        if (glfwGetKey(g.window, GLFW_KEY_W) == GLFW_PRESS) { g.camera.pos += g.camera.front() * speed; }
+        if (glfwGetKey(g.window, GLFW_KEY_A) == GLFW_PRESS) {
             g.camera.pos -= glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
         }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        if (glfwGetKey(g.window, GLFW_KEY_D) == GLFW_PRESS) {
             g.camera.pos += glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
         }
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        if (glfwGetKey(g.window, GLFW_KEY_R) == GLFW_PRESS) {
             wireframe = !wireframe;
             glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
         }
@@ -186,7 +187,11 @@ int main() {
         glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
         glDrawArrays(GL_TRIANGLES, 0, 72);
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(g.window);
+        glfwPollEvents();
+        if (glfwWindowShouldClose(g.window)) {
+            break;
+        }
     }
 
     glDeleteTextures(1, &texPup);
