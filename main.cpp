@@ -4,9 +4,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include<fstream>
-#include<iostream>
-#include<string>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 
 const float width = 800.0f;
 const float height = 600.0f;
@@ -130,7 +131,7 @@ int main() {
     // Create a vertex buffer object per framebuffer and copy the vertex data to it
     std::vector<GLfloat> vec;
     make_cube(vec, 0, 0, 0);
-    make_cube(vec, 1, 0, 0);
+    // make_cube(vec, 1, 0, 0);
 
     GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
     GLuint cube_program = load_program("shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl");
@@ -141,14 +142,9 @@ int main() {
     specify_cube_vertex_attributes(cube_program);
 
     // Load textures
-    GLuint texCat = load_texture("resources/cat.png");
-    GLuint texPup = load_texture("resources/pup.png");
+    GLuint textures = load_texture("resources/fogletexture.png");
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texCat);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texPup);
-    glUniform1i(glGetUniformLocation(cube_program, "texKitten"), 0);
-    glUniform1i(glGetUniformLocation(cube_program, "texPuppy"), 1);
+    glUniform1i(glGetUniformLocation(cube_program, "fogletexture"), 0);
 
     // Get uniform locations
     GLint uniModel = glGetUniformLocation(cube_program, "model");
@@ -200,8 +196,7 @@ int main() {
         }
     }
 
-    glDeleteTextures(1, &texPup);
-    glDeleteTextures(1, &texCat);
+    glDeleteTextures(1, &textures);
 
     glDeleteProgram(cube_program);
 
@@ -218,14 +213,17 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
     const float n{0.5};
     // 6 faces, 4 vertices per face, 3 components per vertex
     const float positions[6][4][3]{
-            {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD
-            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  -1}},    // AEHD
-            {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH
-            {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC
-            {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB
-            {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC
+            {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD front
+            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  -1}},   // AEHD left
+            {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH back
+            {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC right
+            {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB bottom
+            {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC top
     };
-    // wind triangles counter-clockwise to face front
+
+    // wind triangles counter-clockwise to face front. Each 6 element vector
+    // indexes into the four vertices that make up a face, defining two triangles
+    // that share two vertices.
     const int indices[6][6]{
             {0, 3, 1, 1, 3, 2},     // ADB, BDC
             {0, 3, 1, 1, 3, 2},     // ADE, EDH
@@ -234,7 +232,10 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
             {1, 0, 2, 2, 0, 3},     // EAF, FAB
             {1, 0, 2, 2, 0, 3}      // HDG, GDC
     };
-    // texture coordinates
+
+    // texture coordinates--6 faces, four total vertices (2 are shared between
+    // the two adjacent triangles making up once face), 2 texture coordinates
+    // on each corner (2D coordinate).
     const float uv[6][4][2]{
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
@@ -244,14 +245,39 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
             {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
     };
 
+    // the entire texture sample is 1 "logical" unit wide. It is split in 16 by
+    // 16 tiles, each a square 1/16 = 0.0625 units wide
+    float tw{0.0625};
+    // tile coords in texture--(4,2) is the log
+    int tx = 0;
+    int ty = 14;
+    // transformed texture coords in texture-space. Each texture coordinate can
+    // be either 0 or 1 of some tile
+    //  +--------+   top left: (0,1)    top right: (1,1)
+    //  |        |
+    //  |        |
+    //  |        |
+    //  +--------+  low left: (0,0)     low right: (1,0)
+
+    // the left coords share the component x = 1/16 tx
+    // right coords share component x = 1/16 tx + 1/16
+
+    // low coords share component y = 1/16 ty
+    // top coords share component y = 1/16 ty + 1/16
+
+    float du = tw * tx;
+    float dv = tw * ty;
+
+    // 5 components: 3 for position, 2 for texture coord
+    // layout defined in specify_cube_vertex_attributes
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
             int ix = indices[i][j];
             vec.push_back(x + n * positions[i][ix][0]);
             vec.push_back(y + n * positions[i][ix][1]);
             vec.push_back(z + n * positions[i][ix][2]);
-            vec.push_back(uv[i][ix][0]);
-            vec.push_back(uv[i][ix][1]);
+            vec.push_back(du + (uv[i][ix][0] ? tw : 0.0f));
+            vec.push_back(dv + (uv[i][ix][1] ? tw : 0.0f));
         }
     }
 }
