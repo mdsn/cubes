@@ -248,9 +248,9 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
     // the entire texture sample is 1 "logical" unit wide. It is split in 16 by
     // 16 tiles, each a square 1/16 = 0.0625 units wide
     float tw{0.0625};
-    // tile coords in texture--(4,2) is the log
+    // tile coords in texture--(0,1) is the dirt with a bit of grass
     int tx = 0;
-    int ty = 14;
+    int ty = 1;
     // transformed texture coords in texture-space. Each texture coordinate can
     // be either 0 or 1 of some tile
     //  +--------+   top left: (0,1)    top right: (1,1)
@@ -300,7 +300,7 @@ GLuint load_texture(const GLchar *path) {
     glBindTexture(GL_TEXTURE_2D, texture);
     SOIL_load_OGL_texture(
             path, SOIL_LOAD_AUTO, texture,
-            SOIL_FLAG_MIPMAPS | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
+            SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
     );
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
