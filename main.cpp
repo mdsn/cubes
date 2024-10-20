@@ -159,6 +159,8 @@ int main() {
     auto t_prev = t_start;
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
     while (!glfwWindowShouldClose(g.window)) {
         // Update elapsed time
         float t_delta = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev).count();
