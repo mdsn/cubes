@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
 
 const float width = 800.0f;
 const float height = 600.0f;
@@ -125,11 +126,6 @@ int main() {
         return -3;
     }
 
-    // glm::perspective : The first parameter is the vertical field-of-view,
-    //    the second parameter the aspect ratio of the screen and the last two parameters
-    //    are the near and far planes.
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), width / height, 1.0f, 10.0f);
-
     //   --------------- Cube -----------------
 
     // Create a vertex array object for each framebuffer
@@ -160,6 +156,10 @@ int main() {
     GLint uniView = glGetUniformLocation(cube_program, "view");
     GLint uniTime = glGetUniformLocation(cube_program, "time");
 
+    // glm::perspective : The first parameter is the vertical field-of-view,
+    //    the second parameter the aspect ratio of the screen and the last two parameters
+    //    are the near and far planes.
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), width / height, 1.0f, 10.0f);
     glUniformMatrix4fv(glGetUniformLocation(cube_program, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
 
     // ---------------- Loop ------------------
@@ -168,7 +168,7 @@ int main() {
     auto t_prev = t_start;
 
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     while (!glfwWindowShouldClose(g.window)) {
         // Update elapsed time
@@ -223,25 +223,33 @@ int main() {
 void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
     const float n{0.5};
     // 6 faces, 4 vertices per face, 3 components per vertex
-    const float positions[6][4][3]{
-            {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD back (negative z)
-            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  -1}},   // AEHD left (negative x)
-            {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH front (positive z)
-            {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC right (positive x)
-            {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB bottom (negative y)
-            {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC top (positive y)
-    };
+    const std::array<float, 3> A{-1, -1, +1};
+    const std::array<float, 3> B{+1, -1, +1};
+    const std::array<float, 3> C{+1, +1, +1};
+    const std::array<float, 3> D{-1, +1, +1};
+    const std::array<float, 3> E{-1, -1, -1};
+    const std::array<float, 3> F{+1, -1, -1};
+    const std::array<float, 3> G{+1, +1, -1};
+    const std::array<float, 3> H{-1, +1, -1};
+    const std::array<std::array<std::array<float, 3>, 4>, 6> positions {{
+        {A, B, C, D},   // ABCD front (positive z)
+        {F, B, C, G},   // FBCG right (positive x)
+        {E, A, D, H},   // EADH left (negative x)
+        {E, F, G, H},   // EFGH back (negative z)
+        {E, A, B, F},   // EABF bottom (negative y)
+        {H, D, C, G},   // HDCG top (positive y)
+    }};
 
     // wind triangles counter-clockwise to face front. Each 6 element vector
     // indexes into the four vertices that make up a face, defining two triangles
     // that share two vertices.
     const int indices[6][6]{
-            {0, 3, 1, 1, 3, 2},     // ADB, BDC
-            {0, 3, 1, 1, 3, 2},     // ADE, EDH
-            {0, 3, 1, 1, 3, 2},     // EHF, FHG
-            {0, 3, 1, 1, 3, 2},     // BCF, FCG
-            {1, 0, 2, 2, 0, 3},     // EAF, FAB
-            {1, 0, 2, 2, 0, 3}      // HDG, GDC
+            {0, 2, 3, 0, 1, 2},     // front ACD, ABC
+            {1, 3, 2, 1, 0, 3},     // right BGC, BFG
+            {1, 3, 0, 1, 2, 3},     // left AHE, ADH
+            {1, 3, 2, 1, 0, 3},     // back FHG, FEH
+            {1, 0, 3, 1, 3, 2},     // bottom AEF, AFB
+            {1, 2, 3, 1, 3, 0}      // top DCG, DGH
     };
 
     // texture coordinates--6 faces, four total vertices (2 are shared between
