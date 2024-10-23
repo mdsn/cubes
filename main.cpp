@@ -156,7 +156,9 @@ int main() {
   // Create a vertex buffer object per framebuffer and copy the vertex data to
   // it
   std::vector<GLfloat> vec;
-  make_cube(vec, 0, 0, 0);
+  for (int x = 0; x < 16; x++)
+    for (int z = 0; z < 16; z++)
+      make_cube(vec, x, 0, z);
 
   GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
   GLuint cube_program =
@@ -181,7 +183,7 @@ int main() {
   //    the second parameter the aspect ratio of the screen and the last two
   //    parameters are the near and far planes.
   glm::mat4 proj =
-      glm::perspective(glm::radians(45.0f), width / height, 1.0f, 10.0f);
+      glm::perspective(glm::radians(45.0f), width / height, 1.0f, 100.0f);
   glUniformMatrix4fv(glGetUniformLocation(cube_program, "proj"), 1, GL_FALSE,
                      glm::value_ptr(proj));
 
@@ -226,7 +228,7 @@ int main() {
     glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
     glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
-    glDrawArrays(GL_TRIANGLES, 0, 72);
+    glDrawArrays(GL_TRIANGLES, 0, vec.size());
 
     glfwSwapBuffers(g.window);
     glfwPollEvents();

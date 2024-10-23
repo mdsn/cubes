@@ -4,7 +4,6 @@
 #include "cube.h"
 
 void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
-  const float n{0.5};
   // 6 faces, 4 vertices per face, 3 components per vertex
   //      H--------G
   //  D--------C   |
@@ -12,15 +11,15 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
   //  |   |    |   |
   //  |   E----|-- F
   //  A--------B
-  const std::array<float, 3> A{-1, -1, +1};
-  const std::array<float, 3> B{+1, -1, +1};
-  const std::array<float, 3> C{+1, +1, +1};
-  const std::array<float, 3> D{-1, +1, +1};
-  const std::array<float, 3> E{-1, -1, -1};
-  const std::array<float, 3> F{+1, -1, -1};
-  const std::array<float, 3> G{+1, +1, -1};
-  const std::array<float, 3> H{-1, +1, -1};
-  const std::array<std::array<std::array<float, 3>, 4>, 6> positions{{
+  constexpr std::array<float, 3> A{-1, -1, +1};
+  constexpr std::array<float, 3> B{+1, -1, +1};
+  constexpr std::array<float, 3> C{+1, +1, +1};
+  constexpr std::array<float, 3> D{-1, +1, +1};
+  constexpr std::array<float, 3> E{-1, -1, -1};
+  constexpr std::array<float, 3> F{+1, -1, -1};
+  constexpr std::array<float, 3> G{+1, +1, -1};
+  constexpr std::array<float, 3> H{-1, +1, -1};
+  constexpr std::array<std::array<std::array<float, 3>, 4>, 6> positions{{
       {A, B, C, D}, // ABCD front (positive z)
       {F, B, C, G}, // FBCG right (positive x)
       {E, A, D, H}, // EADH left (negative x)
@@ -32,7 +31,7 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
   // wind triangles counter-clockwise to face front. Each 6 element vector
   // indexes into the four vertices that make up a face, defining two triangles
   // that share two vertices.
-  const int indices[6][6]{
+  constexpr int indices[6][6]{
       {0, 2, 3, 0, 1, 2}, // front ACD, ABC
       {1, 3, 2, 1, 0, 3}, // right BGC, BFG
       {1, 3, 0, 1, 2, 3}, // left AHE, ADH
@@ -44,7 +43,7 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
   // texture coordinates--6 faces, four total vertices (2 are shared between
   // the two adjacent triangles making up once face), 2 texture coordinates
   // on each corner (2D coordinate).
-  const float uv[6][4][2]{
+  constexpr float uv[6][4][2]{
       {{0, 0}, {1, 0}, {1, 1}, {0, 1}}, {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
       {{0, 0}, {1, 0}, {1, 1}, {0, 1}}, {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
       {{0, 0}, {1, 0}, {1, 1}, {0, 1}}, {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
@@ -54,8 +53,8 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
   // 16 tiles, each a square 1/16 = 0.0625 units wide
   float tw{0.0625};
   // tile coords in texture--(0,1) is the dirt with a bit of grass
-  int tx = 0;
-  int ty = 1;
+  int tx{0};
+  int ty{1};
   // transformed texture coords in texture-space. Each texture coordinate can
   // be either 0 or 1 of some tile
   //  +--------+   top left: (0,1)    top right: (1,1)
@@ -70,9 +69,10 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
   // low coords share component y = 1/16 ty
   // top coords share component y = 1/16 ty + 1/16
 
-  float du = tw * tx;
-  float dv = tw * ty;
-
+  float du{tw * tx};
+  float dv{tw * ty};
+  float n{0.5};
+  
   // 5 components: 3 for position, 2 for texture coord
   // layout defined in specify_cube_vertex_attributes
   for (int i = 0; i < 6; i++) {
