@@ -8,7 +8,9 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(soil2 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-add_executable(brix main.cpp)
+add_executable(brix main.cpp
+        cube.h
+        cube.cpp)
 target_link_libraries(brix PRIVATE glfw)
 target_link_libraries(brix PRIVATE glad::glad)
 target_link_libraries(brix PRIVATE soil2)
