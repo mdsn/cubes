@@ -95,6 +95,12 @@ void handle_motion_input(double dt) {
     if (glfwGetKey(g.window, GLFW_KEY_D)) {
         g.camera.pos -= glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
     }
+    if (glfwGetKey(g.window, GLFW_KEY_SPACE)) {
+        g.camera.pos += glm::normalize(g.camera.up) * speed;
+    }
+    if (glfwGetKey(g.window, GLFW_KEY_LEFT_CONTROL)) {
+        g.camera.pos -= glm::normalize(g.camera.up) * speed;
+    }
 }
 
 void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
