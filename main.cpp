@@ -40,8 +40,8 @@ struct Camera {
     }
 
     glm::vec3 front() {
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-        rotation = glm::rotate(rotation, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+        rotation = glm::rotate(rotation, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
         return glm::normalize(make_vec3(glm::vec4{0.0f, 0.0f, 1.0f, 0.0f} * rotation));
     }
 
@@ -73,6 +73,8 @@ void handle_mouse_input() {
     if (px || py) {
         glfwGetCursorPos(g.window, &cx, &cy);
         // std::cout << "cursor pos x " << cx << " y " << cy << std::endl;
+        // x grows positively towards the right of the screen
+        // y grows positively towards the bottom of the screen
         float dx = (cx - px) * sensitivity;
         float dy = (cy - py) * sensitivity;
         px = cx;
@@ -136,7 +138,6 @@ int main() {
     // Create a vertex buffer object per framebuffer and copy the vertex data to it
     std::vector<GLfloat> vec;
     make_cube(vec, 0, 0, 0);
-    // make_cube(vec, 1, 0, 0);
 
     GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
     GLuint cube_program = load_program("shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl");
