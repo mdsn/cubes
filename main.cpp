@@ -1,3 +1,5 @@
+#include "chunk.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <SOIL2/SOIL2.h>
@@ -8,9 +10,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <array>
 
-#include "cube.h"
+#include "chunk.h"
 
 const float width = 800.0f;
 const float height = 600.0f;
@@ -156,9 +157,8 @@ int main() {
   // Create a vertex buffer object per framebuffer and copy the vertex data to
   // it
   std::vector<GLfloat> vec;
-  for (int x = 0; x < 16; x++)
-    for (int z = 0; z < 16; z++)
-      make_cube(vec, x, 0, z);
+  make_chunk(vec, 0, 0);
+  make_chunk(vec, 1, 0);
 
   GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
   GLuint cube_program =

@@ -72,7 +72,7 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
   float du{tw * tx};
   float dv{tw * ty};
   float n{0.5};
-  
+
   // 5 components: 3 for position, 2 for texture coord
   // layout defined in specify_cube_vertex_attributes
   for (int i = 0; i < 6; i++) {
