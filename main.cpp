@@ -22,6 +22,7 @@ GLuint load_program(const char *pathv, const char *pathf);
 
 void specify_cube_vertex_attributes(GLuint shader_program);
 
+// https://songho.ca/opengl/gl_camera.html
 struct Camera {
     glm::vec3 pos{0.0f};
     glm::vec3 up{0.0f, 1.0f, 0.0f};
@@ -31,26 +32,33 @@ struct Camera {
     Camera(glm::vec3 cPos) : pos(cPos) {}
 
     void update(float dx, float dy) {
-        yaw += dx;
-        pitch += dy;
+        yaw += dx;      // yaw rotates camera left
+        pitch += dy;    // pitch rotates camera down
         pitch = glm::clamp(pitch, -89.0f, 89.0f);
+        // std::cout << "pitch " << pitch << " yaw " << yaw << std::endl;
     }
 
     glm::vec3 front() {
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-        rotation = glm::rotate(rotation, -glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+        rotation = glm::rotate(rotation, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
         return glm::normalize(make_vec3(glm::vec4{0.0f, 0.0f, 1.0f, 0.0f} * rotation));
     }
 
     glm::mat4 view() {
-        return glm::lookAt(pos, pos + front(), up);
+        // For the view matrix's coordinate system we want its z-axis to be
+        // positive and because by convention (in OpenGL) the camera points
+        // towards the negative z-axis we want to negate the direction vector.
+        // If we switch the subtraction order around we now get a vector
+        // pointing towards the camera's positive z-axis
+        // https://learnopengl.com/Getting-started/Camera
+        return glm::lookAt(pos, pos - front(), up);
     }
 };
 
 struct State {
     bool render_wireframe = false;
     GLFWwindow *window;
-    Camera camera{glm::vec3{0, 0, -3.0}};
+    Camera camera{glm::vec3{0, 0, 5.0}};
 };
 
 // All global state
@@ -63,7 +71,8 @@ void handle_mouse_input() {
     double cx, cy;
     if (px || py) {
         glfwGetCursorPos(g.window, &cx, &cy);
-        float dx = (px - cx) * sensitivity;
+        // std::cout << "cursor pos x " << cx << " y " << cy << std::endl;
+        float dx = (cx - px) * sensitivity;
         float dy = (cy - py) * sensitivity;
         px = cx;
         py = cy;
@@ -75,13 +84,13 @@ void handle_mouse_input() {
 
 void handle_motion_input(double dt) {
     float speed = 5.0 * dt;
-    if (glfwGetKey(g.window, GLFW_KEY_W)) { g.camera.pos += g.camera.front() * speed; }
-    if (glfwGetKey(g.window, GLFW_KEY_S)) { g.camera.pos -= g.camera.front() * speed; }
+    if (glfwGetKey(g.window, GLFW_KEY_W)) { g.camera.pos -= g.camera.front() * speed; }
+    if (glfwGetKey(g.window, GLFW_KEY_S)) { g.camera.pos += g.camera.front() * speed; }
     if (glfwGetKey(g.window, GLFW_KEY_A)) {
-        g.camera.pos -= glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
+        g.camera.pos += glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
     }
     if (glfwGetKey(g.window, GLFW_KEY_D)) {
-        g.camera.pos += glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
+        g.camera.pos -= glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
     }
 }
 
@@ -159,7 +168,7 @@ int main() {
     auto t_prev = t_start;
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     while (!glfwWindowShouldClose(g.window)) {
         // Update elapsed time
@@ -215,12 +224,12 @@ void make_cube(std::vector<GLfloat> &vec, float x, float y, float z) {
     const float n{0.5};
     // 6 faces, 4 vertices per face, 3 components per vertex
     const float positions[6][4][3]{
-            {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD front
-            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  -1}},   // AEHD left
-            {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH back
-            {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC right
-            {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB bottom
-            {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC top
+            {{-1, -1, -1}, {1,  -1, -1}, {1,  1,  -1}, {-1, 1,  -1}},   // ABCD back (negative z)
+            {{-1, -1, -1}, {-1, -1, 1},  {-1, 1,  1},  {-1, 1,  -1}},   // AEHD left (negative x)
+            {{-1, -1, 1},  {1,  -1, 1},  {1,  1,  1},  {-1, 1,  1}},    // EFGH front (positive z)
+            {{1,  -1, -1}, {1,  -1, 1},  {1,  1,  1},  {1,  1,  -1}},   // BFGC right (positive x)
+            {{-1, -1, -1}, {-1, -1, 1},  {1,  -1, 1},  {1,  -1, -1}},   // AEFB bottom (negative y)
+            {{-1, 1,  -1}, {-1, 1,  1},  {1,  1,  1},  {1,  1,  -1}}    // DHGC top (positive y)
     };
 
     // wind triangles counter-clockwise to face front. Each 6 element vector
