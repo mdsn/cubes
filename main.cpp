@@ -157,8 +157,8 @@ int main() {
   // Create a vertex buffer object per framebuffer and copy the vertex data to
   // it
   std::vector<GLfloat> vec;
-  make_chunk(vec, 0, 0);
-  make_chunk(vec, 1, 0);
+  Chunk chunk{0, 0};
+  chunk.emit_cubes(vec);
 
   GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
   GLuint cube_program =
