@@ -1,5 +1,4 @@
-#ifndef CHUNK_H
-#define CHUNK_H
+#pragma once
 #include <vector>
 #include <glad/glad.h>
 
@@ -8,5 +7,3 @@
 #define CHUNK_SIZE 16
 
 void make_chunk(std::vector<GLfloat> &vec, int x, int z);
-
-#endif // CHUNK_H

@@ -1,5 +1,4 @@
-#ifndef CUBE_H
-#define CUBE_H
+#pragma once
 #include <glad/glad.h>
 
 void make_cube(std::vector<GLfloat>& vec, float x, float y, float z);
@@ -16,5 +15,3 @@ public:
   Cube(float x, float y, float z, CubeTex tex);
   void emit_faces(std::vector<GLfloat> &vec);
 };
-
-#endif //CUBE_H
