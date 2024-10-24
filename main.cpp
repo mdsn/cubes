@@ -175,7 +175,6 @@ int main() {
   glUniform1i(glGetUniformLocation(cube_program, "fogletexture"), 0);
 
   // Get uniform locations
-  GLint uniModel = glGetUniformLocation(cube_program, "model");
   GLint uniView = glGetUniformLocation(cube_program, "view");
   GLint uniTime = glGetUniformLocation(cube_program, "time");
 
@@ -219,13 +218,11 @@ int main() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = g.camera.view();
 
     // Draw the cube
     glUseProgram(cube_program);
     glBindVertexArray(vaoCube);
-    glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
     glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
     glDrawArrays(GL_TRIANGLES, 0, vec.size());
