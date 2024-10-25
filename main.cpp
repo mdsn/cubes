@@ -107,7 +107,40 @@ int main() {
     return -3;
   }
 
+  glActiveTexture(GL_TEXTURE0);
+  // --------------- Text -----------------
+  // Load font shaders
+  Shader font_shader{"shaders/textVertex.glsl", "shaders/textFragment.glsl"};
+  font_shader.use();
+
+  // Load font texture
+  GLuint font = load_texture("resources/foglefont.png");
+  font_shader.set_int("foglefont", 0); // GL_TEXTURE0?
+  font_shader.set_mat4fv("proj",
+                         glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f));
+  // Create a vao for the text
+  GLuint vaoText;
+  glGenVertexArrays(1, &vaoText);
+  glBindVertexArray(vaoText);
+  std::vector<GLfloat> quad{
+    // x y u v
+    0.0f, 20.0f, 0.0f, 1.0f,
+    20.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f,
+
+    0.0f, 20.0f, 0.0f, 1.0f,
+    20.0f, 20.0f, 1.0f, 1.0f,
+    20.0f, 0.0f, 1.0f, 0.0f
+  };
+  GLuint vboText = gen_buffer(quad.size() * sizeof(GLfloat), quad.data());
+  glBindBuffer(GL_ARRAY_BUFFER, vboText);
+  GLint vertexAttr = glGetAttribLocation(font_shader.id, "vertex");
+  glEnableVertexAttribArray(vertexAttr);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+
   //   --------------- Cube -----------------
+  Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
+  cube_shader.use();
   // Create a vertex array object
   GLuint vaoCube;
   glGenVertexArrays(1, &vaoCube);
@@ -119,14 +152,11 @@ int main() {
   chunk.emit_cubes(vec);
 
   GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
-  Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
-
-  cube_shader.use();
   glBindBuffer(GL_ARRAY_BUFFER, vboCube);
   specify_cube_vertex_attributes(cube_shader.id);
 
   // Load textures
-  glActiveTexture(GL_TEXTURE0);
+  // glActiveTexture(GL_TEXTURE0);
   GLuint textures = load_texture("resources/fogletexture.png");
   cube_shader.set_int("fogletexture", 0); // GL_TEXTURE0
 
@@ -173,9 +203,19 @@ int main() {
     cube_shader.use();
     cube_shader.set_mat4fv("view", g.camera.view());
     cube_shader.set_float("time", (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
-
+    glBindTexture(GL_TEXTURE_2D, textures);
     glBindVertexArray(vaoCube);
-    glDrawArrays(GL_TRIANGLES, 0, vec.size());
+    // this should be count of vertices, not count of elements in vec
+    // also why are there 46080 elements here -> 256 cubes, 36 vertices output per cube, 5 elems per vertex
+    glDrawArrays(GL_TRIANGLES, 0, vec.size()/5);
+    glBindVertexArray(0);
+
+    // Draw the text?
+    font_shader.use();
+    glBindTexture(GL_TEXTURE_2D, font);
+    glBindVertexArray(vaoText);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
 
     glfwSwapBuffers(g.window);
     glfwPollEvents();
@@ -187,6 +227,10 @@ int main() {
   glDeleteTextures(1, &textures);
   glDeleteBuffers(1, &vboCube);
   glDeleteVertexArrays(1, &vaoCube);
+
+  glDeleteTextures(1, &font);
+  glDeleteBuffers(1, &vboText);
+  glDeleteVertexArrays(1, &vaoText);
 
   glfwTerminate();
   return 0;
@@ -203,11 +247,11 @@ GLuint gen_buffer(GLsizei size, GLfloat *data) {
 }
 
 GLuint load_texture(const GLchar *path) {
-  GLuint texture;
-  glGenTextures(1, &texture);
+  GLuint id;
+  glGenTextures(1, &id);
 
-  glBindTexture(GL_TEXTURE_2D, texture);
-  SOIL_load_OGL_texture(path, SOIL_LOAD_AUTO, texture,
+  glBindTexture(GL_TEXTURE_2D, id);
+  SOIL_load_OGL_texture(path, SOIL_LOAD_AUTO, id,
                         SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y |
                             SOIL_FLAG_NTSC_SAFE_RGB |
                             SOIL_FLAG_COMPRESS_TO_DXT);
@@ -217,7 +261,7 @@ GLuint load_texture(const GLchar *path) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  return texture;
+  return id;
 }
 
 void specify_cube_vertex_attributes(GLuint shader_program) {
