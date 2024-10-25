@@ -16,11 +16,7 @@ const float width = 800.0f;
 const float height = 600.0f;
 
 GLuint gen_buffer(GLsizei size, GLfloat *data);
-
 GLuint load_texture(const GLchar *path);
-
-GLuint load_program(const char *pathv, const char *pathf);
-
 void specify_cube_vertex_attributes(GLuint shader_program);
 
 // https://songho.ca/opengl/gl_camera.html
