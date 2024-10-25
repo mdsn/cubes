@@ -12,11 +12,12 @@
 #include "camera.h"
 #include "chunk.h"
 #include "shader.h"
+#include "vao.h"
+#include "vbo.h"
 
 const float width = 800.0f;
 const float height = 600.0f;
 
-GLuint gen_buffer(GLsizei size, GLfloat *data);
 GLuint load_texture(const GLchar *path);
 void specify_cube_vertex_attributes(GLuint shader_program);
 
@@ -119,21 +120,14 @@ int main() {
   font_shader.set_mat4fv("proj",
                          glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f));
   // Create a vao for the text
-  GLuint vaoText;
-  glGenVertexArrays(1, &vaoText);
-  glBindVertexArray(vaoText);
-  std::vector<GLfloat> quad{
-    // x y u v
-    0.0f, 20.0f, 0.0f, 1.0f,
-    20.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f,
-
-    0.0f, 20.0f, 0.0f, 1.0f,
-    20.0f, 20.0f, 1.0f, 1.0f,
-    20.0f, 0.0f, 1.0f, 0.0f
-  };
-  GLuint vboText = gen_buffer(quad.size() * sizeof(GLfloat), quad.data());
-  glBindBuffer(GL_ARRAY_BUFFER, vboText);
+  VAO vaoText;
+  vaoText.bind();
+  std::vector<GLfloat> quad{0.0f, 20.0f, 0.0f,  1.0f, 20.0f, 0.0f, // x y u v
+                            1.0f, 0.0f,  0.0f,  0.0f, 0.0f,  0.0f,
+                            0.0f, 20.0f, 0.0f,  1.0f, 20.0f, 20.0f,
+                            1.0f, 1.0f,  20.0f, 0.0f, 1.0f,  0.0f};
+  VBO vboText{quad.size() * sizeof(GLfloat), quad.data()};
+  vboText.bind();
   GLint vertexAttr = glGetAttribLocation(font_shader.id, "vertex");
   glEnableVertexAttribArray(vertexAttr);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
@@ -142,21 +136,19 @@ int main() {
   Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
   cube_shader.use();
   // Create a vertex array object
-  GLuint vaoCube;
-  glGenVertexArrays(1, &vaoCube);
-  glBindVertexArray(vaoCube);
+  VAO vaoCube;
+  vaoCube.bind();
 
   // Create a vertex buffer object and copy the vertex data to it
   std::vector<GLfloat> vec;
   Chunk chunk{0, 0};
   chunk.emit_cubes(vec);
 
-  GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
-  glBindBuffer(GL_ARRAY_BUFFER, vboCube);
+  VBO vboCube{vec.size() * sizeof(GLfloat), vec.data()};
+  vboCube.bind();
   specify_cube_vertex_attributes(cube_shader.id);
 
   // Load textures
-  // glActiveTexture(GL_TEXTURE0);
   GLuint textures = load_texture("resources/fogletexture.png");
   cube_shader.set_int("fogletexture", 0); // GL_TEXTURE0
 
@@ -204,18 +196,21 @@ int main() {
     cube_shader.set_mat4fv("view", g.camera.view());
     cube_shader.set_float("time", (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
     glBindTexture(GL_TEXTURE_2D, textures);
-    glBindVertexArray(vaoCube);
+    vaoCube.bind();
     // this should be count of vertices, not count of elements in vec
-    // also why are there 46080 elements here -> 256 cubes, 36 vertices output per cube, 5 elems per vertex
-    glDrawArrays(GL_TRIANGLES, 0, vec.size()/5);
-    glBindVertexArray(0);
+    // also why are there 46080 elements here -> 256 cubes, 36 vertices output
+    // per cube, 5 elems per vertex
+    glDrawArrays(GL_TRIANGLES, 0, vec.size() / 5);
+    VAO::unbind();
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Force GL_FILL for text
 
     // Draw the text?
     font_shader.use();
     glBindTexture(GL_TEXTURE_2D, font);
-    glBindVertexArray(vaoText);
+    vaoText.bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
+    VAO::unbind();
 
     glfwSwapBuffers(g.window);
     glfwPollEvents();
@@ -225,27 +220,13 @@ int main() {
   }
 
   glDeleteTextures(1, &textures);
-  glDeleteBuffers(1, &vboCube);
-  glDeleteVertexArrays(1, &vaoCube);
-
   glDeleteTextures(1, &font);
-  glDeleteBuffers(1, &vboText);
-  glDeleteVertexArrays(1, &vaoText);
 
   glfwTerminate();
   return 0;
 }
 
 // ------------------ gl stuff -------------------
-GLuint gen_buffer(GLsizei size, GLfloat *data) {
-  GLuint name;
-  glGenBuffers(1, &name);
-  glBindBuffer(GL_ARRAY_BUFFER, name);
-  glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  return name;
-}
-
 GLuint load_texture(const GLchar *path) {
   GLuint id;
   glGenTextures(1, &id);
