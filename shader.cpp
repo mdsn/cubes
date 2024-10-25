@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "shader.h"
 
@@ -54,4 +55,19 @@ Shader::Shader(const char *path_vert, const char *path_frag) {
   glDetachShader(id, fsh);
   glDeleteShader(vsh);
   glDeleteShader(fsh);
+}
+
+void Shader::use() { glUseProgram(id); }
+
+void Shader::set_int(const std::string &name, GLint value) const {
+  glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+}
+
+void Shader::set_float(const std::string &name, GLfloat value) const {
+  glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+}
+
+void Shader::set_mat4fv(const std::string &name, const glm::mat4 &mat) const {
+  glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE,
+                     glm::value_ptr(mat));
 }

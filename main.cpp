@@ -148,13 +148,12 @@ int main() {
 
   //   --------------- Cube -----------------
 
-  // Create a vertex array object for each framebuffer
+  // Create a vertex array object
   GLuint vaoCube;
   glGenVertexArrays(1, &vaoCube);
   glBindVertexArray(vaoCube);
 
-  // Create a vertex buffer object per framebuffer and copy the vertex data to
-  // it
+  // Create a vertex buffer object and copy the vertex data to it
   std::vector<GLfloat> vec;
   Chunk chunk{0, 0};
   chunk.emit_cubes(vec);
@@ -168,21 +167,16 @@ int main() {
   specify_cube_vertex_attributes(cube_shader.id);
 
   // Load textures
-  GLuint textures = load_texture("resources/fogletexture.png");
   glActiveTexture(GL_TEXTURE0);
-  glUniform1i(glGetUniformLocation(cube_shader.id, "fogletexture"), 0);
-
-  // Get uniform locations
-  GLint uniView = glGetUniformLocation(cube_shader.id, "view");
-  GLint uniTime = glGetUniformLocation(cube_shader.id, "time");
+  GLuint textures = load_texture("resources/fogletexture.png");
+  cube_shader.set_int("fogletexture", 0); // GL_TEXTURE0
 
   // glm::perspective : The first parameter is the vertical field-of-view,
   //    the second parameter the aspect ratio of the screen and the last two
   //    parameters are the near and far planes.
-  glm::mat4 proj =
-      glm::perspective(glm::radians(45.0f), width / height, 1.0f, 100.0f);
-  glUniformMatrix4fv(glGetUniformLocation(cube_shader.id, "proj"), 1, GL_FALSE,
-                     glm::value_ptr(proj));
+  cube_shader.set_mat4fv(
+      "proj",
+      glm::perspective(glm::radians(45.0f), width / height, 1.0f, 100.0f));
 
   // ---------------- Loop ------------------
   auto t_start = std::chrono::high_resolution_clock::now();
@@ -216,13 +210,12 @@ int main() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 view = g.camera.view();
-
     // Draw the cube
-    glUseProgram(cube_shader.id);
+    cube_shader.use();
+    cube_shader.set_mat4fv("view", g.camera.view());
+    cube_shader.set_float("time", (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
+
     glBindVertexArray(vaoCube);
-    glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
-    glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
     glDrawArrays(GL_TRIANGLES, 0, vec.size());
 
     glfwSwapBuffers(g.window);
