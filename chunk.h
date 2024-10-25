@@ -14,5 +14,5 @@ class Chunk {
 
 public:
   Chunk(int x, int z);
-  void emit_cubes(std::vector<GLfloat> &vec);
+  void emit_cubes(std::vector<GLfloat> &vec) const;
 };

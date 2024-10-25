@@ -12,8 +12,8 @@ public:
   GLuint id;
   Shader(const char *path_vert, const char *path_frag);
   ~Shader();
-  
-  void use();
+
+  void use() const;
 
   void set_int(const std::string &name, GLint value) const;
   void set_float(const std::string &name, GLfloat value) const;

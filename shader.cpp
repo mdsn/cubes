@@ -13,7 +13,7 @@ std::string read_file(const char *path) {
   return str;
 }
 
-void check_error(GLuint id, GLenum type) {
+void check_error(const GLuint id, GLenum type) {
   void (*query)(GLuint, GLenum, GLint *);
   void (*get_info)(GLuint, GLsizei, GLsizei *, GLchar *);
   std::string msg;
@@ -45,9 +45,9 @@ void check_error(GLuint id, GLenum type) {
 }
 
 GLuint load_shader(GLenum type, const char *path) {
-  std::string src{read_file(path)};
+  const std::string src{read_file(path)};
   const char *csrc{src.c_str()};
-  GLuint id{glCreateShader(type)};
+  const GLuint id{glCreateShader(type)};
   glShaderSource(id, 1, &csrc, NULL);
   glCompileShader(id);
   check_error(id, GL_COMPILE_STATUS);
@@ -56,8 +56,8 @@ GLuint load_shader(GLenum type, const char *path) {
 
 Shader::Shader(const char *path_vert, const char *path_frag) {
   id = glCreateProgram();
-  GLuint vsh = load_shader(GL_VERTEX_SHADER, path_vert);
-  GLuint fsh = load_shader(GL_FRAGMENT_SHADER, path_frag);
+  const GLuint vsh = load_shader(GL_VERTEX_SHADER, path_vert);
+  const GLuint fsh = load_shader(GL_FRAGMENT_SHADER, path_frag);
   glAttachShader(id, vsh);
   glAttachShader(id, fsh);
   glBindFragDataLocation(id, 0, "outColor");
@@ -69,7 +69,7 @@ Shader::Shader(const char *path_vert, const char *path_frag) {
   glDeleteShader(fsh);
 }
 
-void Shader::use() { glUseProgram(id); }
+void Shader::use() const { glUseProgram(id); }
 Shader::~Shader() { glDeleteProgram(id); }
 
 void Shader::set_int(const std::string &name, GLint value) const {

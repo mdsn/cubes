@@ -10,7 +10,7 @@ Chunk::Chunk(int x, int z) : x(x), z(z), cubes({}) {
     }
 }
 
-void Chunk::emit_cubes(std::vector<GLfloat> &vec) {
-  for (Cube &q : cubes)
+void Chunk::emit_cubes(std::vector<GLfloat> &vec) const {
+  for (const Cube &q : cubes)
     q.emit_faces(vec);
 }

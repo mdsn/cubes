@@ -9,7 +9,7 @@ CubeTex::CubeTex(int front, int right, int left, int back, int bottom, int top)
 Cube::Cube(float x, float y, float z, CubeTex tex)
     : x(x), y(y), z(z), tex(tex) {}
 
-void Cube::emit_faces(std::vector<GLfloat> &vec) {
+void Cube::emit_faces(std::vector<GLfloat> &vec) const {
   // 6 faces, 4 vertices per face, 3 components per vertex
   //      H--------G
   //  D--------C   |
