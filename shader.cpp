@@ -13,23 +13,44 @@ std::string read_file(const char *path) {
   return str;
 }
 
+void check_error(GLuint id, GLenum type) {
+  void(*query)(GLuint, GLenum, GLint *);
+  void(*get_info)(GLuint, GLsizei, GLsizei *, GLchar *);
+  std::string msg;
+
+  switch (type) {
+    case GL_COMPILE_STATUS:
+      query = glGetShaderiv;
+      get_info = glGetShaderInfoLog;
+      msg = "shader compilation failed: ";
+      break;
+    case GL_LINK_STATUS:
+      query = glGetProgramiv;
+      get_info = glGetProgramInfoLog;
+      msg = "program linkage failed: ";
+      break;
+  }
+
+  GLint success{0};
+  query(id, type, &success);
+
+  if (success == GL_FALSE) {
+    GLint log_size{0};
+    query(id, GL_INFO_LOG_LENGTH, &log_size);
+    std::vector<GLchar> log(log_size);
+    get_info(id, log_size, &log_size, log.data());
+    std::string err = std::string(log.begin(), log.end());
+    std::cerr << msg << err << std::endl;
+  }
+}
+
 GLuint load_shader(GLenum type, const char *path) {
   std::string src{read_file(path)};
   const char *csrc{src.c_str()};
   GLuint id{glCreateShader(type)};
   glShaderSource(id, 1, &csrc, NULL);
   glCompileShader(id);
-  GLint success{0};
-  glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-  // TODO factor out all this error log boilerplate
-  if (success == GL_FALSE) {
-    GLint log_size{0};
-    glGetShaderiv(id, GL_INFO_LOG_LENGTH, &log_size);
-    std::vector<GLchar> log(log_size);
-    glGetShaderInfoLog(id, log_size, &log_size, log.data());
-    std::string err = std::string(log.begin(), log.end());
-    std::cerr << "shader compilation failed: " << err << std::endl;
-  }
+  check_error(id, GL_COMPILE_STATUS);
   return id;
 }
 
@@ -41,16 +62,7 @@ Shader::Shader(const char *path_vert, const char *path_frag) {
   glAttachShader(id, fsh);
   glBindFragDataLocation(id, 0, "outColor");
   glLinkProgram(id);
-  GLint success{0};
-  glGetProgramiv(id, GL_LINK_STATUS, &success);
-  if (success == GL_FALSE) {
-    GLint log_size{0};
-    glGetProgramiv(id, GL_INFO_LOG_LENGTH, &log_size);
-    std::vector<GLchar> log(log_size);
-    glGetProgramInfoLog(id, log_size, &log_size, log.data());
-    std::string err = std::string(log.begin(), log.end());
-    std::cerr << "program linkage failed: " << err << std::endl;
-  }
+  check_error(id, GL_LINK_STATUS);
   glDetachShader(id, vsh);
   glDetachShader(id, fsh);
   glDeleteShader(vsh);
