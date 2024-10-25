@@ -14,11 +14,11 @@
 #include "shader.h"
 #include "vao.h"
 #include "vbo.h"
+#include "texture.h"
 
 const float width = 800.0f;
 const float height = 600.0f;
 
-GLuint load_texture(const GLchar *path);
 void specify_cube_vertex_attributes(GLuint shader_program);
 
 struct State {
@@ -115,7 +115,7 @@ int main() {
   font_shader.use();
 
   // Load font texture
-  GLuint font = load_texture("resources/foglefont.png");
+  Texture font_texture{"resources/foglefont.png"};
   font_shader.set_int("foglefont", 0); // GL_TEXTURE0?
   font_shader.set_mat4fv("proj",
                          glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f));
@@ -149,7 +149,7 @@ int main() {
   specify_cube_vertex_attributes(cube_shader.id);
 
   // Load textures
-  GLuint textures = load_texture("resources/fogletexture.png");
+  Texture cube_texture{"resources/fogletexture.png"};
   cube_shader.set_int("fogletexture", 0); // GL_TEXTURE0
 
   // glm::perspective : The first parameter is the vertical field-of-view,
@@ -195,7 +195,7 @@ int main() {
     cube_shader.use();
     cube_shader.set_mat4fv("view", g.camera.view());
     cube_shader.set_float("time", (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
-    glBindTexture(GL_TEXTURE_2D, textures);
+    cube_texture.bind();
     vaoCube.bind();
     // this should be count of vertices, not count of elements in vec
     // also why are there 46080 elements here -> 256 cubes, 36 vertices output
@@ -207,7 +207,7 @@ int main() {
 
     // Draw the text?
     font_shader.use();
-    glBindTexture(GL_TEXTURE_2D, font);
+    font_texture.bind();
     vaoText.bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
     VAO::unbind();
@@ -219,32 +219,11 @@ int main() {
     }
   }
 
-  glDeleteTextures(1, &textures);
-  glDeleteTextures(1, &font);
-
   glfwTerminate();
   return 0;
 }
 
 // ------------------ gl stuff -------------------
-GLuint load_texture(const GLchar *path) {
-  GLuint id;
-  glGenTextures(1, &id);
-
-  glBindTexture(GL_TEXTURE_2D, id);
-  SOIL_load_OGL_texture(path, SOIL_LOAD_AUTO, id,
-                        SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y |
-                            SOIL_FLAG_NTSC_SAFE_RGB |
-                            SOIL_FLAG_COMPRESS_TO_DXT);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  return id;
-}
-
 void specify_cube_vertex_attributes(GLuint shader_program) {
   GLint posAttrib = glGetAttribLocation(shader_program, "position");
   glEnableVertexAttribArray(posAttrib);

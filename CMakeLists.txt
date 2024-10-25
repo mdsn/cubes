@@ -20,7 +20,9 @@ add_executable(brix main.cpp
         vbo.cpp
         vbo.h
         vao.cpp
-        vao.h)
+        vao.h
+        texture.cpp
+        texture.h)
 target_link_libraries(brix PRIVATE glfw)
 target_link_libraries(brix PRIVATE glad::glad)
 target_link_libraries(brix PRIVATE soil2)
