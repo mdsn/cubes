@@ -1,6 +1,5 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <SOIL2/SOIL2.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -18,8 +17,6 @@
 
 const float width = 800.0f;
 const float height = 600.0f;
-
-void specify_cube_vertex_attributes(GLuint shader_program);
 
 struct State {
   bool render_wireframe = false;
@@ -125,11 +122,9 @@ int main() {
                             1.0f, 0.0f,  0.0f,  0.0f, 0.0f,  0.0f,
                             0.0f, 20.0f, 0.0f,  1.0f, 20.0f, 20.0f,
                             1.0f, 1.0f,  20.0f, 0.0f, 1.0f,  0.0f};
-  VBO vboText{quad.size() * sizeof(GLfloat), quad.data()};
-  vboText.bind();
-  GLint vertexAttr = glGetAttribLocation(font_shader.id, "vertex");
-  glEnableVertexAttribArray(vertexAttr);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+  VBO vboText;
+  vboText.write(quad.size() * sizeof(GLfloat), quad.data());
+  font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);
 
   //   --------------- Cube -----------------
   Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
@@ -147,9 +142,12 @@ int main() {
   std::vector<GLfloat> vec;
   Chunk chunk{0, 0};
   chunk.emit_cubes(vec);
-  VBO vboCube{vec.size() * sizeof(GLfloat), vec.data()};
-  vboCube.bind();
-  specify_cube_vertex_attributes(cube_shader.id);
+  VBO vboCube;
+  vboCube.write(vec.size() * sizeof(GLfloat), vec.data());
+  cube_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), 0);
+  cube_shader.attr("texcoord", 2, GL_FLOAT, 5 * sizeof(float),
+                   (void *)(3 * sizeof(float)));
+
   // ---------------- Loop ------------------
   auto t_start = std::chrono::high_resolution_clock::now();
   auto t_now = t_start;
@@ -210,16 +208,4 @@ int main() {
 
   glfwTerminate();
   return 0;
-}
-
-// ------------------ gl stuff -------------------
-void specify_cube_vertex_attributes(GLuint shader_program) {
-  GLint posAttrib = glGetAttribLocation(shader_program, "position");
-  glEnableVertexAttribArray(posAttrib);
-  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
-
-  GLint texAttrib = glGetAttribLocation(shader_program, "texcoord");
-  glEnableVertexAttribArray(texAttrib);
-  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
 }

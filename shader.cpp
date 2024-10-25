@@ -84,3 +84,10 @@ void Shader::set_mat4fv(const std::string &name, const glm::mat4 &mat) const {
   glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE,
                      glm::value_ptr(mat));
 }
+
+void Shader::attr(const std::string &name, GLint size, GLenum type,
+                  GLsizei stride, const void *pointer) const {
+  GLint index = glGetAttribLocation(id, name.c_str());
+  glEnableVertexAttribArray(index);
+  glVertexAttribPointer(index, size, type, GL_FALSE, stride, pointer);
+}

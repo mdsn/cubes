@@ -6,7 +6,8 @@ class VBO {
   GLuint id;
 
 public:
-  VBO(size_t size, GLfloat *data);
+  VBO();
   ~VBO();
   void bind() const;
+  void write(size_t size, GLfloat *data) const;
 };
