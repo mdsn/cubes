@@ -1,5 +1,3 @@
-#include "chunk.h"
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <SOIL2/SOIL2.h>
@@ -12,6 +10,7 @@
 #include <vector>
 
 #include "chunk.h"
+#include "shader.h"
 
 const float width = 800.0f;
 const float height = 600.0f;
@@ -161,29 +160,28 @@ int main() {
   chunk.emit_cubes(vec);
 
   GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
-  GLuint cube_program =
-      load_program("shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl");
+  Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
 
-  glUseProgram(cube_program);
+  glUseProgram(cube_shader.id);
 
   glBindBuffer(GL_ARRAY_BUFFER, vboCube);
-  specify_cube_vertex_attributes(cube_program);
+  specify_cube_vertex_attributes(cube_shader.id);
 
   // Load textures
   GLuint textures = load_texture("resources/fogletexture.png");
   glActiveTexture(GL_TEXTURE0);
-  glUniform1i(glGetUniformLocation(cube_program, "fogletexture"), 0);
+  glUniform1i(glGetUniformLocation(cube_shader.id, "fogletexture"), 0);
 
   // Get uniform locations
-  GLint uniView = glGetUniformLocation(cube_program, "view");
-  GLint uniTime = glGetUniformLocation(cube_program, "time");
+  GLint uniView = glGetUniformLocation(cube_shader.id, "view");
+  GLint uniTime = glGetUniformLocation(cube_shader.id, "time");
 
   // glm::perspective : The first parameter is the vertical field-of-view,
   //    the second parameter the aspect ratio of the screen and the last two
   //    parameters are the near and far planes.
   glm::mat4 proj =
       glm::perspective(glm::radians(45.0f), width / height, 1.0f, 100.0f);
-  glUniformMatrix4fv(glGetUniformLocation(cube_program, "proj"), 1, GL_FALSE,
+  glUniformMatrix4fv(glGetUniformLocation(cube_shader.id, "proj"), 1, GL_FALSE,
                      glm::value_ptr(proj));
 
   // ---------------- Loop ------------------
@@ -221,7 +219,7 @@ int main() {
     glm::mat4 view = g.camera.view();
 
     // Draw the cube
-    glUseProgram(cube_program);
+    glUseProgram(cube_shader.id);
     glBindVertexArray(vaoCube);
     glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
     glUniform1f(uniTime, (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
@@ -236,7 +234,7 @@ int main() {
 
   glDeleteTextures(1, &textures);
 
-  glDeleteProgram(cube_program);
+  glDeleteProgram(cube_shader.id);
 
   glDeleteBuffers(1, &vboCube);
   glDeleteVertexArrays(1, &vaoCube);
@@ -283,64 +281,4 @@ void specify_cube_vertex_attributes(GLuint shader_program) {
   glEnableVertexAttribArray(texAttrib);
   glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                         (void *)(3 * sizeof(float)));
-}
-
-// ---------------- shader stuff ----------------
-
-std::string read_file(const char *path) {
-  std::ifstream ifs(path);
-  std::string res((std::istreambuf_iterator<char>(ifs)),
-                  (std::istreambuf_iterator<char>()));
-  return res;
-}
-
-GLuint make_shader(GLenum type, const char *source) {
-  GLuint name = glCreateShader(type);
-  glShaderSource(name, 1, &source, NULL);
-  glCompileShader(name);
-  GLint success{0};
-  glGetShaderiv(name, GL_COMPILE_STATUS, &success);
-  if (success == GL_FALSE) {
-    GLint log_size{0};
-    glGetShaderiv(name, GL_INFO_LOG_LENGTH, &log_size);
-    std::vector<GLchar> log(log_size);
-    glGetShaderInfoLog(name, log_size, &log_size, log.data());
-    std::string err = std::string(log.begin(), log.end());
-    std::cerr << "shader compilation failed: " << err << std::endl;
-  }
-  return name;
-}
-
-GLuint load_shader(GLenum type, const char *path) {
-  std::string source = read_file(path);
-  return make_shader(type, source.c_str());
-}
-
-GLuint make_program(GLuint vsh, GLuint fsh) {
-  GLuint name = glCreateProgram();
-  glAttachShader(name, vsh);
-  glAttachShader(name, fsh);
-  glBindFragDataLocation(name, 0, "outColor");
-  glLinkProgram(name);
-  GLint success{0};
-  glGetProgramiv(name, GL_LINK_STATUS, &success);
-  if (success == GL_FALSE) {
-    GLint log_size{0};
-    glGetProgramiv(name, GL_INFO_LOG_LENGTH, &log_size);
-    std::vector<GLchar> log(log_size);
-    glGetProgramInfoLog(name, log_size, &log_size, log.data());
-    std::string err = std::string(log.begin(), log.end());
-    std::cerr << "program linkage failed: " << err << std::endl;
-  }
-  glDetachShader(name, vsh);
-  glDetachShader(name, fsh);
-  glDeleteShader(vsh);
-  glDeleteShader(fsh);
-  return name;
-}
-
-GLuint load_program(const char *pathv, const char *pathf) {
-  GLuint vsh = load_shader(GL_VERTEX_SHADER, pathv);
-  GLuint fsh = load_shader(GL_FRAGMENT_SHADER, pathf);
-  return make_program(vsh, fsh);
 }
