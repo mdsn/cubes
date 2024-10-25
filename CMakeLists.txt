@@ -14,7 +14,9 @@ add_executable(brix main.cpp
         chunk.cpp
         chunk.h
         shader.cpp
-        shader.h)
+        shader.h
+        camera.cpp
+        camera.h)
 target_link_libraries(brix PRIVATE glfw)
 target_link_libraries(brix PRIVATE glad::glad)
 target_link_libraries(brix PRIVATE soil2)
