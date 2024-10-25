@@ -14,21 +14,21 @@ std::string read_file(const char *path) {
 }
 
 void check_error(GLuint id, GLenum type) {
-  void(*query)(GLuint, GLenum, GLint *);
-  void(*get_info)(GLuint, GLsizei, GLsizei *, GLchar *);
+  void (*query)(GLuint, GLenum, GLint *);
+  void (*get_info)(GLuint, GLsizei, GLsizei *, GLchar *);
   std::string msg;
 
   switch (type) {
-    case GL_COMPILE_STATUS:
-      query = glGetShaderiv;
-      get_info = glGetShaderInfoLog;
-      msg = "shader compilation failed: ";
-      break;
-    case GL_LINK_STATUS:
-      query = glGetProgramiv;
-      get_info = glGetProgramInfoLog;
-      msg = "program linkage failed: ";
-      break;
+  case GL_COMPILE_STATUS:
+    query = glGetShaderiv;
+    get_info = glGetShaderInfoLog;
+    msg = "shader compilation failed: ";
+    break;
+  case GL_LINK_STATUS:
+    query = glGetProgramiv;
+    get_info = glGetProgramInfoLog;
+    msg = "program linkage failed: ";
+    break;
   }
 
   GLint success{0};
@@ -70,6 +70,7 @@ Shader::Shader(const char *path_vert, const char *path_frag) {
 }
 
 void Shader::use() { glUseProgram(id); }
+Shader::~Shader() { glDeleteProgram(id); }
 
 void Shader::set_int(const std::string &name, GLint value) const {
   glUniform1i(glGetUniformLocation(id, name.c_str()), value);

@@ -161,8 +161,7 @@ int main() {
   GLuint vboCube = gen_buffer(vec.size() * sizeof(GLfloat), vec.data());
   Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
 
-  glUseProgram(cube_shader.id);
-
+  cube_shader.use();
   glBindBuffer(GL_ARRAY_BUFFER, vboCube);
   specify_cube_vertex_attributes(cube_shader.id);
 
@@ -226,9 +225,6 @@ int main() {
   }
 
   glDeleteTextures(1, &textures);
-
-  glDeleteProgram(cube_shader.id);
-
   glDeleteBuffers(1, &vboCube);
   glDeleteVertexArrays(1, &vaoCube);
 

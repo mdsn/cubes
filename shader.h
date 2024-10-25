@@ -11,6 +11,8 @@ class Shader {
 public:
   GLuint id;
   Shader(const char *path_vert, const char *path_frag);
+  ~Shader();
+  
   void use();
 
   void set_int(const std::string &name, GLint value) const;
