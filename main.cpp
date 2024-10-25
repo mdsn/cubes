@@ -113,12 +113,11 @@ int main() {
   // Load font shaders
   Shader font_shader{"shaders/textVertex.glsl", "shaders/textFragment.glsl"};
   font_shader.use();
-
-  // Load font texture
-  Texture font_texture{"resources/foglefont.png"};
   font_shader.set_int("foglefont", 0); // GL_TEXTURE0?
   font_shader.set_mat4fv("proj",
                          glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f));
+  // Load font texture
+  Texture font_texture{"resources/foglefont.png"};
   // Create a vao for the text
   VAO vaoText;
   vaoText.bind();
@@ -135,30 +134,22 @@ int main() {
   //   --------------- Cube -----------------
   Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
   cube_shader.use();
+  cube_shader.set_int("fogletexture", 0); // GL_TEXTURE0
+  cube_shader.set_mat4fv(
+      "proj",
+      glm::perspective(glm::radians(45.0f), width / height, 1.0f, 100.0f));
+  // Load textures
+  Texture cube_texture{"resources/fogletexture.png"};
   // Create a vertex array object
   VAO vaoCube;
   vaoCube.bind();
-
   // Create a vertex buffer object and copy the vertex data to it
   std::vector<GLfloat> vec;
   Chunk chunk{0, 0};
   chunk.emit_cubes(vec);
-
   VBO vboCube{vec.size() * sizeof(GLfloat), vec.data()};
   vboCube.bind();
   specify_cube_vertex_attributes(cube_shader.id);
-
-  // Load textures
-  Texture cube_texture{"resources/fogletexture.png"};
-  cube_shader.set_int("fogletexture", 0); // GL_TEXTURE0
-
-  // glm::perspective : The first parameter is the vertical field-of-view,
-  //    the second parameter the aspect ratio of the screen and the last two
-  //    parameters are the near and far planes.
-  cube_shader.set_mat4fv(
-      "proj",
-      glm::perspective(glm::radians(45.0f), width / height, 1.0f, 100.0f));
-
   // ---------------- Loop ------------------
   auto t_start = std::chrono::high_resolution_clock::now();
   auto t_now = t_start;
@@ -186,12 +177,11 @@ int main() {
     handle_mouse_input();
     handle_motion_input(t_delta);
 
-    glPolygonMode(GL_FRONT_AND_BACK, g.render_wireframe ? GL_LINE : GL_FILL);
-
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw the cube
+    glPolygonMode(GL_FRONT_AND_BACK, g.render_wireframe ? GL_LINE : GL_FILL);
     cube_shader.use();
     cube_shader.set_mat4fv("view", g.camera.view());
     cube_shader.set_float("time", (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
@@ -203,9 +193,8 @@ int main() {
     glDrawArrays(GL_TRIANGLES, 0, vec.size() / 5);
     VAO::unbind();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Force GL_FILL for text
-
     // Draw the text?
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Force GL_FILL for text
     font_shader.use();
     font_texture.bind();
     vaoText.bind();
