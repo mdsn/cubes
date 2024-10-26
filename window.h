@@ -9,6 +9,15 @@ using RenderFn = std::function<void()>;
 using Clock = std::chrono::steady_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 
+class Keyboard {
+  bool keys[GLFW_KEY_LAST];
+
+public:
+  bool pressed(int key) const { return (key >= 0) && keys[key]; }
+  void press(int key) { keys[key] = true; }
+  void release(int key) { keys[key] = false; }
+};
+
 class Window {
   glm::ivec2 size;
   UpdateFn update;
@@ -18,12 +27,14 @@ class Window {
   TimePoint time_now;
 
 public:
+  Keyboard keyboard;
   float time_delta;
   GLFWwindow *handle;
 
-  Window(int width, int height, GLFWkeyfun on_key, UpdateFn update,
-         RenderFn render);
+  static void Init(int width, int height, UpdateFn update, RenderFn render);
   ~Window();
 
   void loop();
 };
+
+extern Window window;

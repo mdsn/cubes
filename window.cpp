@@ -5,13 +5,30 @@
 
 const char *WINDOW_TITLE = "BRIX";
 
+// Global window--thanks jdh
+Window window;
+
 void _error_callback(int code, const char *err) {
   std::cerr << "GLFW error " << code << ": " << err << std::endl;
 }
 
-Window::Window(int width, int height, GLFWkeyfun on_key, UpdateFn update,
-               RenderFn render)
-    : size({width, height}), update(update), render(render) {
+void _key_callback(GLFWwindow *handle, int key, int scancode, int action,
+                   int mods) {
+  switch (action) {
+  case GLFW_PRESS:
+    window.keyboard.press(key);
+    break;
+  case GLFW_RELEASE:
+    window.keyboard.release(key);
+    break;
+  }
+}
+
+void Window::Init(int width, int height, UpdateFn update, RenderFn render) {
+  window.size = glm::ivec2{width, height};
+  window.update = update;
+  window.render = render;
+
   glfwSetErrorCallback(_error_callback);
   if (!glfwInit()) {
     std::exit(-1);
@@ -23,17 +40,18 @@ Window::Window(int width, int height, GLFWkeyfun on_key, UpdateFn update,
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  handle = glfwCreateWindow(size.x, size.y, WINDOW_TITLE, NULL, NULL);
-  if (!handle) {
+  window.handle =
+      glfwCreateWindow(window.size.x, window.size.y, WINDOW_TITLE, NULL, NULL);
+  if (!window.handle) {
     glfwTerminate();
     std::exit(-1);
   }
 
-  glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSetInputMode(handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-  glfwSetKeyCallback(handle, on_key);
+  glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetInputMode(window.handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+  glfwSetKeyCallback(window.handle, _key_callback);
 
-  glfwMakeContextCurrent(handle);
+  glfwMakeContextCurrent(window.handle);
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     glfwTerminate();
     std::exit(-1);

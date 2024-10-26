@@ -51,43 +51,39 @@ void handle_mouse_input() {
 
 void handle_motion_input(double dt) {
   float speed = 5.0 * dt;
-  if (glfwGetKey(g.window->handle, GLFW_KEY_W)) {
+  if (g.window->keyboard.pressed(GLFW_KEY_W)) {
     g.camera.pos -= g.camera.front() * speed;
   }
-  if (glfwGetKey(g.window->handle, GLFW_KEY_S)) {
+  if (g.window->keyboard.pressed(GLFW_KEY_S)) {
     g.camera.pos += g.camera.front() * speed;
   }
-  if (glfwGetKey(g.window->handle, GLFW_KEY_A)) {
+  if (g.window->keyboard.pressed(GLFW_KEY_A)) {
     g.camera.pos +=
         glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
   }
-  if (glfwGetKey(g.window->handle, GLFW_KEY_D)) {
+  if (g.window->keyboard.pressed(GLFW_KEY_D)) {
     g.camera.pos -=
         glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
   }
-  if (glfwGetKey(g.window->handle, GLFW_KEY_SPACE)) {
+  if (g.window->keyboard.pressed(GLFW_KEY_SPACE)) {
     g.camera.pos += glm::normalize(g.camera.up) * speed;
   }
-  if (glfwGetKey(g.window->handle, GLFW_KEY_LEFT_CONTROL)) {
+  if (g.window->keyboard.pressed(GLFW_KEY_LEFT_CONTROL)) {
     g.camera.pos -= glm::normalize(g.camera.up) * speed;
   }
 }
 
-void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
-  if (action != GLFW_PRESS)
-    return;
-  if (key == GLFW_KEY_R) {
+void update() {
+  if (g.window->keyboard.pressed(GLFW_KEY_R)) {
     g.render_wireframe = !g.render_wireframe;
   }
 }
 
-void update() { return; }
-
-void render() { return; }
+void render() {}
 
 int main() {
-  Window w{800, 600, on_key, update, render};
-  g.window = &w;
+  Window::Init(800, 600, update, render);
+  g.window = &window;
 
   glActiveTexture(GL_TEXTURE0);
   // --------------- Text -----------------
