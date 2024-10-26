@@ -81,8 +81,12 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
   }
 }
 
+void update() { return; }
+
+void render() { return; }
+
 int main() {
-  Window w{800, 600, on_key};
+  Window w{800, 600, on_key, update, render};
   g.window = &w;
 
   glActiveTexture(GL_TEXTURE0);

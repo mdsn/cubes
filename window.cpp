@@ -9,8 +9,9 @@ void _error_callback(int code, const char *err) {
   std::cerr << "GLFW error " << code << ": " << err << std::endl;
 }
 
-Window::Window(int width, int height, GLFWkeyfun on_key)
-    : size({width, height}) {
+Window::Window(int width, int height, GLFWkeyfun on_key, UpdateFn update,
+               RenderFn render)
+    : size({width, height}), update(update), render(render) {
   glfwSetErrorCallback(_error_callback);
   if (!glfwInit()) {
     std::exit(-1);
@@ -40,3 +41,22 @@ Window::Window(int width, int height, GLFWkeyfun on_key)
 }
 
 Window::~Window() { glfwTerminate(); }
+
+void Window::loop() {
+  time_now = Clock::now();
+  time_prev = time_now;
+
+  while (!glfwWindowShouldClose(handle)) {
+    time_delta = std::chrono::duration_cast<std::chrono::duration<float>>(
+                     time_now - time_prev)
+                     .count();
+    time_prev = time_now;
+    time_now = Clock::now();
+
+    update();
+    render();
+
+    glfwSwapBuffers(handle);
+    glfwPollEvents();
+  }
+}
