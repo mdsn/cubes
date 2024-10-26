@@ -14,22 +14,17 @@
 #include "vbo.h"
 #include "texture.h"
 #include "window.h"
+#include "state.h"
 
 const float width = 800.0f;
 const float height = 600.0f;
 
 struct World {
   glm::dvec2 pos; // player pos
-  Chunk *chunk; // current chunk under player pos
+  Chunk *chunk;   // current chunk under player pos
 };
 
 void on_key(GLFWwindow *window, int key, int scancode, int action, int mods);
-
-struct State {
-  bool render_wireframe = false;
-  Window window{800, 600, on_key};
-  Camera camera{glm::vec3{0, 0, 5.0}};
-};
 
 // All global state
 State g;
@@ -40,7 +35,7 @@ void handle_mouse_input() {
   static double py{0};
   double cx, cy;
   if (px || py) {
-    glfwGetCursorPos(g.window.handle, &cx, &cy);
+    glfwGetCursorPos(g.window->handle, &cx, &cy);
     // std::cout << "cursor pos x " << cx << " y " << cy << std::endl;
     // x grows positively towards the right of the screen
     // y grows positively towards the bottom of the screen
@@ -50,30 +45,30 @@ void handle_mouse_input() {
     py = cy;
     g.camera.update(dx, dy);
   } else {
-    glfwGetCursorPos(g.window.handle, &px, &py);
+    glfwGetCursorPos(g.window->handle, &px, &py);
   }
 }
 
 void handle_motion_input(double dt) {
   float speed = 5.0 * dt;
-  if (glfwGetKey(g.window.handle, GLFW_KEY_W)) {
+  if (glfwGetKey(g.window->handle, GLFW_KEY_W)) {
     g.camera.pos -= g.camera.front() * speed;
   }
-  if (glfwGetKey(g.window.handle, GLFW_KEY_S)) {
+  if (glfwGetKey(g.window->handle, GLFW_KEY_S)) {
     g.camera.pos += g.camera.front() * speed;
   }
-  if (glfwGetKey(g.window.handle, GLFW_KEY_A)) {
+  if (glfwGetKey(g.window->handle, GLFW_KEY_A)) {
     g.camera.pos +=
         glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
   }
-  if (glfwGetKey(g.window.handle, GLFW_KEY_D)) {
+  if (glfwGetKey(g.window->handle, GLFW_KEY_D)) {
     g.camera.pos -=
         glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
   }
-  if (glfwGetKey(g.window.handle, GLFW_KEY_SPACE)) {
+  if (glfwGetKey(g.window->handle, GLFW_KEY_SPACE)) {
     g.camera.pos += glm::normalize(g.camera.up) * speed;
   }
-  if (glfwGetKey(g.window.handle, GLFW_KEY_LEFT_CONTROL)) {
+  if (glfwGetKey(g.window->handle, GLFW_KEY_LEFT_CONTROL)) {
     g.camera.pos -= glm::normalize(g.camera.up) * speed;
   }
 }
@@ -87,6 +82,9 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
 }
 
 int main() {
+  Window w{800, 600, on_key};
+  g.window = &w;
+
   glActiveTexture(GL_TEXTURE0);
   // --------------- Text -----------------
   // Load font shaders
@@ -138,7 +136,7 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
 
-  while (!glfwWindowShouldClose(g.window.handle)) {
+  while (!glfwWindowShouldClose(g.window->handle)) {
     // Update elapsed time
     float t_delta =
         std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev)
@@ -150,8 +148,8 @@ int main() {
                                                                  t_start)
             .count();
 
-    if (glfwGetKey(g.window.handle, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-      glfwSetWindowShouldClose(g.window.handle, GL_TRUE);
+    if (glfwGetKey(g.window->handle, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+      glfwSetWindowShouldClose(g.window->handle, GL_TRUE);
     }
 
     handle_mouse_input();
@@ -181,13 +179,12 @@ int main() {
     glDrawArrays(GL_TRIANGLES, 0, 6);
     VAO::unbind();
 
-    glfwSwapBuffers(g.window.handle);
+    glfwSwapBuffers(g.window->handle);
     glfwPollEvents();
-    if (glfwWindowShouldClose(g.window.handle)) {
+    if (glfwWindowShouldClose(g.window->handle)) {
       break;
     }
   }
 
-  glfwTerminate();
   return 0;
 }
