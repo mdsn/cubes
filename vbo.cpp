@@ -3,10 +3,7 @@
 
 VBO::VBO() { glGenBuffers(1, &id); }
 
-VBO::~VBO() {
-  glDeleteBuffers(1, &id);
-  std::cout << "VBO: goodbye" << std::endl;
-}
+VBO::~VBO() { glDeleteBuffers(1, &id); }
 
 void VBO::bind() const { glBindBuffer(GL_ARRAY_BUFFER, id); }
 

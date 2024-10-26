@@ -3,10 +3,7 @@
 
 VAO::VAO() { glGenVertexArrays(1, &id); }
 
-VAO::~VAO() {
-  glDeleteVertexArrays(1, &id);
-  std::cout << "VAO: goodbye" << std::endl;
-}
+VAO::~VAO() { glDeleteVertexArrays(1, &id); }
 
 void VAO::bind() const { glBindVertexArray(id); }
 
