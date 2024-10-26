@@ -9,13 +9,23 @@ using RenderFn = std::function<void()>;
 using Clock = std::chrono::steady_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 
+struct Key {
+  bool down;   // is the key pressed now
+  bool before; // was the key pressed last time we checked
+};
+
 class Keyboard {
-  bool keys[GLFW_KEY_LAST];
+  Key keys[GLFW_KEY_LAST];
 
 public:
-  bool pressed(int key) const { return (key >= 0) && keys[key]; }
-  void press(int key) { keys[key] = true; }
-  void release(int key) { keys[key] = false; }
+  bool pressed_once(int key) {
+    bool pressed = keys[key].down && !keys[key].before;
+    keys[key].before = keys[key].down;
+    return pressed;
+  }
+  bool held(int key) { return keys[key].down; }
+  void press(int key) { keys[key].down = true; }
+  void release(int key) { keys[key].down = false; }
 };
 
 class Window {

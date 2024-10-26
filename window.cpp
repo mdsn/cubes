@@ -14,6 +14,8 @@ void _error_callback(int code, const char *err) {
 
 void _key_callback(GLFWwindow *handle, int key, int scancode, int action,
                    int mods) {
+  if (key < 0)
+    return;
   switch (action) {
   case GLFW_PRESS:
     window.keyboard.press(key);

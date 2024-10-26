@@ -43,24 +43,24 @@ void handle_mouse_input() {
 
 void handle_motion_input(double dt) {
   float speed = 5.0 * dt;
-  if (g.window->keyboard.pressed(GLFW_KEY_W)) {
+  if (g.window->keyboard.held(GLFW_KEY_W)) {
     g.camera.pos -= g.camera.front() * speed;
   }
-  if (g.window->keyboard.pressed(GLFW_KEY_S)) {
+  if (g.window->keyboard.held(GLFW_KEY_S)) {
     g.camera.pos += g.camera.front() * speed;
   }
-  if (g.window->keyboard.pressed(GLFW_KEY_A)) {
+  if (g.window->keyboard.held(GLFW_KEY_A)) {
     g.camera.pos +=
         glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
   }
-  if (g.window->keyboard.pressed(GLFW_KEY_D)) {
+  if (g.window->keyboard.held(GLFW_KEY_D)) {
     g.camera.pos -=
         glm::normalize(glm::cross(g.camera.front(), g.camera.up)) * speed;
   }
-  if (g.window->keyboard.pressed(GLFW_KEY_SPACE)) {
+  if (g.window->keyboard.held(GLFW_KEY_SPACE)) {
     g.camera.pos += glm::normalize(g.camera.up) * speed;
   }
-  if (g.window->keyboard.pressed(GLFW_KEY_LEFT_CONTROL)) {
+  if (g.window->keyboard.held(GLFW_KEY_LEFT_CONTROL)) {
     g.camera.pos -= glm::normalize(g.camera.up) * speed;
   }
 }
@@ -69,11 +69,11 @@ void update() {
   handle_mouse_input();
   handle_motion_input(g.window->time_delta);
 
-  if (g.window->keyboard.pressed(GLFW_KEY_R)) {
+  if (g.window->keyboard.pressed_once(GLFW_KEY_R)) {
     g.render_wireframe = !g.render_wireframe;
   }
 
-  if (g.window->keyboard.pressed(GLFW_KEY_ESCAPE)) {
+  if (g.window->keyboard.pressed_once(GLFW_KEY_ESCAPE)) {
     glfwSetWindowShouldClose(g.window->handle, GL_TRUE);
   }
 }
