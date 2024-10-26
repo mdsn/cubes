@@ -76,30 +76,6 @@ void render() { g.world.render(); }
 int main() {
   Window::Init(800, 600, update, render);
   g.window = &window;
-
-  glActiveTexture(GL_TEXTURE0);
-
-  // --------------- Text -----------------
-  // Load font shaders
-  Shader font_shader{"shaders/textVertex.glsl", "shaders/textFragment.glsl"};
-  font_shader.use();
-  font_shader.set_int("foglefont", 0); // GL_TEXTURE0?
-  font_shader.set_mat4fv("proj",
-                         glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f));
-  // Load font texture
-  Texture font_texture{"resources/foglefont.png"};
-  // Create a vao for the text
-  VAO vaoText;
-  vaoText.bind();
-  std::vector<GLfloat> quad{0.0f, 20.0f, 0.0f,  1.0f, 20.0f, 0.0f, // x y u v
-                            1.0f, 0.0f,  0.0f,  0.0f, 0.0f,  0.0f,
-                            0.0f, 20.0f, 0.0f,  1.0f, 20.0f, 20.0f,
-                            1.0f, 1.0f,  20.0f, 0.0f, 1.0f,  0.0f};
-  VBO vboText;
-  vboText.write(quad.size() * sizeof(GLfloat), quad.data());
-  font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);
-
-  //   --------------- Cube -----------------
   Renderer renderer{g.world};
   g.renderer = &renderer;
 
@@ -132,11 +108,7 @@ int main() {
     glDrawArrays(GL_TRIANGLES, 0, g.world.vertices().size() / 5);
     VAO::unbind();
 
-    // Draw the text?
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Force GL_FILL for text
-    font_shader.use();
-    font_texture.bind();
-    vaoText.bind();
+    g.renderer->prepare_ui();
     glDrawArrays(GL_TRIANGLES, 0, 6);
     VAO::unbind();
 

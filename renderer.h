@@ -12,8 +12,14 @@ class Renderer {
   VAO world_vao;
   VBO world_vbo;
 
+  Shader font_shader;
+  Texture font_texture;
+  VAO font_vao;
+  VBO font_vbo;
+
 public:
   Renderer(World &world);
 
   void prepare_world(World &world, bool wireframe, const Camera &camera);
+  void prepare_ui();
 };
