@@ -22,7 +22,10 @@ add_executable(brix main.cpp
         vao.cpp
         vao.h
         texture.cpp
-        texture.h)
+        texture.h
+        window.cpp
+        window.h
+        gfx.h)
 target_link_libraries(brix PRIVATE glfw)
 target_link_libraries(brix PRIVATE glad::glad)
 target_link_libraries(brix PRIVATE soil2)
