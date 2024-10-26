@@ -66,12 +66,27 @@ void handle_motion_input(double dt) {
 }
 
 void update() {
+  handle_mouse_input();
+  handle_motion_input(g.window->time_delta);
+
   if (g.window->keyboard.pressed(GLFW_KEY_R)) {
     g.render_wireframe = !g.render_wireframe;
   }
+
+  if (g.window->keyboard.pressed(GLFW_KEY_ESCAPE)) {
+    glfwSetWindowShouldClose(g.window->handle, GL_TRUE);
+  }
 }
 
-void render() { g.world.render(); }
+void render() {
+  g.renderer->prepare_world(g.world, g.render_wireframe, g.camera);
+  glDrawArrays(GL_TRIANGLES, 0, g.world.vertices().size() / 5);
+  VAO::unbind();
+
+  g.renderer->prepare_ui();
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  VAO::unbind();
+}
 
 int main() {
   Window::Init(800, 600, update, render);
@@ -79,45 +94,7 @@ int main() {
   Renderer renderer{g.world};
   g.renderer = &renderer;
 
-  // ---------------- Loop ------------------
-  auto t_start = std::chrono::high_resolution_clock::now();
-  auto t_now = t_start;
-  auto t_prev = t_start;
-
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-
-  while (!glfwWindowShouldClose(g.window->handle)) {
-    float t_delta =
-        std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev)
-            .count();
-    t_prev = t_now;
-    t_now = std::chrono::high_resolution_clock::now();
-
-    if (glfwGetKey(g.window->handle, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-      glfwSetWindowShouldClose(g.window->handle, GL_TRUE);
-    }
-
-    handle_mouse_input();
-    handle_motion_input(t_delta);
-
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    g.renderer->prepare_world(g.world, g.render_wireframe, g.camera);
-    glDrawArrays(GL_TRIANGLES, 0, g.world.vertices().size() / 5);
-    VAO::unbind();
-
-    g.renderer->prepare_ui();
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    VAO::unbind();
-
-    glfwSwapBuffers(g.window->handle);
-    glfwPollEvents();
-    if (glfwWindowShouldClose(g.window->handle)) {
-      break;
-    }
-  }
+  window.loop();
 
   return 0;
 }

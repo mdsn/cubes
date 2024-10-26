@@ -6,6 +6,9 @@ Renderer::Renderer(World &world)
       world_texture{"resources/fogletexture.png"},
       font_shader{"shaders/textVertex.glsl", "shaders/textFragment.glsl"},
       font_texture{"resources/foglefont.png"} {
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+
   world_shader.use();
   world_shader.set_int("fogletexture", 0);
   world_shader.set_mat4fv( // XXX 800x600 hardcoded
@@ -34,6 +37,8 @@ Renderer::Renderer(World &world)
 
 void Renderer::prepare_world(World &world, bool wireframe,
                              const Camera &camera) {
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
   world_shader.use();
   world_shader.set_mat4fv("view", camera.view());

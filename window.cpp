@@ -56,7 +56,6 @@ void Window::Init(int width, int height, UpdateFn update, RenderFn render) {
     glfwTerminate();
     std::exit(-1);
   }
-
 }
 
 Window::~Window() { glfwTerminate(); }
