@@ -26,7 +26,12 @@ add_executable(brix main.cpp
         window.cpp
         window.h
         gfx.h
-        state.h)
+        state.h
+        world.cpp
+        world.h
+        renderer.cpp
+        renderer.h
+)
 target_link_libraries(brix PRIVATE glfw)
 target_link_libraries(brix PRIVATE glad::glad)
 target_link_libraries(brix PRIVATE soil2)

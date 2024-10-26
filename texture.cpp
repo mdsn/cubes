@@ -1,3 +1,4 @@
+#include <iostream>
 #include "texture.h"
 
 #include <SOIL2/SOIL2.h>
@@ -15,6 +16,9 @@ Texture::Texture(const char *path) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-Texture::~Texture() { glDeleteTextures(1, &id); }
+Texture::~Texture() {
+  glDeleteTextures(1, &id);
+  std::cout << "Texture: goodbye" << std::endl;
+}
 
 void Texture::bind() const { glBindTexture(GL_TEXTURE_2D, id); }

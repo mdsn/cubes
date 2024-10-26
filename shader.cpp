@@ -70,7 +70,10 @@ Shader::Shader(const char *path_vert, const char *path_frag) {
 }
 
 void Shader::use() const { glUseProgram(id); }
-Shader::~Shader() { glDeleteProgram(id); }
+Shader::~Shader() {
+  glDeleteProgram(id);
+  std::cout << "Shader: goodbye" << std::endl;
+}
 
 void Shader::set_int(const std::string &name, GLint value) const {
   glUniform1i(glGetUniformLocation(id, name.c_str()), value);

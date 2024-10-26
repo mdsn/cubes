@@ -2,10 +2,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <vector>
-
 #include "gfx.h"
 #include "camera.h"
 #include "chunk.h"
@@ -15,16 +13,10 @@
 #include "texture.h"
 #include "window.h"
 #include "state.h"
+#include "renderer.h"
 
 const float width = 800.0f;
 const float height = 600.0f;
-
-struct World {
-  glm::dvec2 pos; // player pos
-  Chunk *chunk;   // current chunk under player pos
-};
-
-void on_key(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 // All global state
 State g;
@@ -79,13 +71,14 @@ void update() {
   }
 }
 
-void render() {}
+void render() { g.world.render(); }
 
 int main() {
   Window::Init(800, 600, update, render);
   g.window = &window;
 
   glActiveTexture(GL_TEXTURE0);
+
   // --------------- Text -----------------
   // Load font shaders
   Shader font_shader{"shaders/textVertex.glsl", "shaders/textFragment.glsl"};
@@ -107,26 +100,8 @@ int main() {
   font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);
 
   //   --------------- Cube -----------------
-  Shader cube_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"};
-  cube_shader.use();
-  cube_shader.set_int("fogletexture", 0); // GL_TEXTURE0
-  cube_shader.set_mat4fv(
-      "proj",
-      glm::perspective(glm::radians(45.0f), width / height, 1.0f, 100.0f));
-  // Load textures
-  Texture cube_texture{"resources/fogletexture.png"};
-  // Create a vertex array object
-  VAO vaoCube;
-  vaoCube.bind();
-  // Create a vertex buffer object and copy the vertex data to it
-  std::vector<GLfloat> vec;
-  Chunk chunk{0, 0};
-  chunk.emit_cubes(vec);
-  VBO vboCube;
-  vboCube.write(vec.size() * sizeof(GLfloat), vec.data());
-  cube_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), 0);
-  cube_shader.attr("texcoord", 2, GL_FLOAT, 5 * sizeof(float),
-                   (void *)(3 * sizeof(float)));
+  Renderer renderer{g.world};
+  g.renderer = &renderer;
 
   // ---------------- Loop ------------------
   auto t_start = std::chrono::high_resolution_clock::now();
@@ -137,16 +112,11 @@ int main() {
   glEnable(GL_CULL_FACE);
 
   while (!glfwWindowShouldClose(g.window->handle)) {
-    // Update elapsed time
     float t_delta =
         std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev)
             .count();
     t_prev = t_now;
     t_now = std::chrono::high_resolution_clock::now();
-    float elapsedTime =
-        std::chrono::duration_cast<std::chrono::duration<float>>(t_now -
-                                                                 t_start)
-            .count();
 
     if (glfwGetKey(g.window->handle, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
       glfwSetWindowShouldClose(g.window->handle, GL_TRUE);
@@ -158,17 +128,8 @@ int main() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Draw the cube
-    glPolygonMode(GL_FRONT_AND_BACK, g.render_wireframe ? GL_LINE : GL_FILL);
-    cube_shader.use();
-    cube_shader.set_mat4fv("view", g.camera.view());
-    cube_shader.set_float("time", (sin(elapsedTime * 4.0f) + 1.0f) / 2.0f);
-    cube_texture.bind();
-    vaoCube.bind();
-    // this should be count of vertices, not count of elements in vec
-    // also why are there 46080 elements here -> 256 cubes, 36 vertices output
-    // per cube, 5 elems per vertex
-    glDrawArrays(GL_TRIANGLES, 0, vec.size() / 5);
+    g.renderer->prepare_world(g.world, g.render_wireframe, g.camera);
+    glDrawArrays(GL_TRIANGLES, 0, g.world.vertices().size() / 5);
     VAO::unbind();
 
     // Draw the text?

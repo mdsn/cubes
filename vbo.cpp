@@ -1,12 +1,12 @@
+#include <iostream>
 #include "vbo.h"
 
-VBO::VBO() {
-  glGenBuffers(1, &id);
-  glBindBuffer(GL_ARRAY_BUFFER, id);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
+VBO::VBO() { glGenBuffers(1, &id); }
 
-VBO::~VBO() { glDeleteBuffers(1, &id); }
+VBO::~VBO() {
+  glDeleteBuffers(1, &id);
+  std::cout << "VBO: goodbye" << std::endl;
+}
 
 void VBO::bind() const { glBindBuffer(GL_ARRAY_BUFFER, id); }
 
