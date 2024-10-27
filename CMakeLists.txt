@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 project(brix)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 
 find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
@@ -33,6 +33,8 @@ add_executable(brix main.cpp
         renderer.h
         font.cpp
         font.h
+        debug.cpp
+        debug.h
 )
 target_link_libraries(brix PRIVATE glfw)
 target_link_libraries(brix PRIVATE glad::glad)

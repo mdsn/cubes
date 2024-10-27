@@ -27,11 +27,6 @@ Renderer::Renderer(World &world)
   font_shader.set_int("font", 0);
   font_shader.set_mat4fv("proj",
                          glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f));
-  std::vector<GLfloat> quad = make_quads("Text sample 123");
-
-  font_vao.bind();
-  font_vbo.write(quad.size() * sizeof(GLfloat), quad.data());
-  font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);
 }
 
 void Renderer::prepare_world(World &world, bool wireframe,
@@ -50,4 +45,13 @@ void Renderer::prepare_ui() {
   font_shader.use();
   font_texture.bind();
   font_vao.bind();
+}
+
+void Renderer::render_ui(const Debug &debug) {
+  auto lines = debug.lines();
+  std::vector<GLfloat> quad = make_quads(lines);
+  font_vbo.write(quad.size() * sizeof(GLfloat), quad.data());
+  font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);
+  glDrawArrays(GL_TRIANGLES, 0, quad.size() / 4);
+  VAO::unbind();
 }

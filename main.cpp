@@ -76,6 +76,9 @@ void update() {
   if (g.window->keyboard.pressed_once(GLFW_KEY_ESCAPE)) {
     glfwSetWindowShouldClose(g.window->handle, GL_TRUE);
   }
+
+  g.debug.camera_pos = g.camera.pos;
+  g.debug.time_delta = g.window->time_delta;
 }
 
 void render() {
@@ -84,8 +87,7 @@ void render() {
   VAO::unbind();
 
   g.renderer->prepare_ui();
-  glDrawArrays(GL_TRIANGLES, 0, 90); // 15 chars * 6 vertices
-  VAO::unbind();
+  g.renderer->render_ui(g.debug);
 }
 
 int main() {

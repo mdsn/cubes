@@ -1,5 +1,6 @@
 #pragma once
 #include "camera.h"
+#include "debug.h"
 #include "shader.h"
 #include "texture.h"
 #include "vao.h"
@@ -22,4 +23,5 @@ public:
 
   void prepare_world(World &world, bool wireframe, const Camera &camera);
   void prepare_ui();
+  void render_ui(const Debug &debug);
 };
