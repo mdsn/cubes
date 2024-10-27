@@ -84,7 +84,7 @@ void render() {
   VAO::unbind();
 
   g.renderer->prepare_ui();
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDrawArrays(GL_TRIANGLES, 0, 90); // 15 chars * 6 vertices
   VAO::unbind();
 }
 

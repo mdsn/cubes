@@ -31,6 +31,8 @@ add_executable(brix main.cpp
         world.h
         renderer.cpp
         renderer.h
+        font.cpp
+        font.h
 )
 target_link_libraries(brix PRIVATE glfw)
 target_link_libraries(brix PRIVATE glad::glad)

@@ -1,11 +1,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "renderer.h"
+#include "font.h"
 
 Renderer::Renderer(World &world)
     : world_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"},
       world_texture{"resources/fogletexture.png"},
       font_shader{"shaders/textVertex.glsl", "shaders/textFragment.glsl"},
-      font_texture{"resources/foglefont.png"} {
+      font_texture{"resources/fixedsys.png"} {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
 
@@ -23,13 +24,11 @@ Renderer::Renderer(World &world)
                     (void *)(3 * sizeof(float)));
 
   font_shader.use();
-  font_shader.set_int("foglefont", 0);
+  font_shader.set_int("font", 0);
   font_shader.set_mat4fv("proj",
                          glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f));
-  std::vector<GLfloat> quad{0.0f, 20.0f, 0.0f,  1.0f, 20.0f, 0.0f, // x y u v
-                            1.0f, 0.0f,  0.0f,  0.0f, 0.0f,  0.0f,
-                            0.0f, 20.0f, 0.0f,  1.0f, 20.0f, 20.0f,
-                            1.0f, 1.0f,  20.0f, 0.0f, 1.0f,  0.0f};
+  std::vector<GLfloat> quad = make_quads("Text sample 123");
+
   font_vao.bind();
   font_vbo.write(quad.size() * sizeof(GLfloat), quad.data());
   font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);
