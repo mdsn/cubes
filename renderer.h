@@ -22,6 +22,7 @@ public:
   Renderer(World &world);
 
   void prepare_world(World &world, bool wireframe, const Camera &camera);
+  void render_World(World &world);
   void prepare_ui();
   void render_ui(const Debug &debug);
 };

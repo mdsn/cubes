@@ -5,10 +5,11 @@
 
 class World {
   glm::dvec2 pos; // player pos
-  Chunk chunk;   // current chunk under player pos
   std::vector<GLfloat> chunk_vertices;
+
 public:
+  bool chunk_changed = true;
+  Chunk chunk; // current chunk under player pos
   World();
-  void render() const;
   std::vector<GLfloat> &vertices();
 };

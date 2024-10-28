@@ -79,6 +79,11 @@ void update() {
 
   // calculate position to chunk (fvec3 -> ivec2)
   g.current_chunk = pos_to_chunk(g.camera.pos);
+  if (g.prev_chunk != g.current_chunk) {
+    g.world.chunk = Chunk{g.current_chunk.x, g.current_chunk.y};
+    g.world.chunk_changed = true;
+  }
+  g.prev_chunk = g.current_chunk;
 
   if (g.window->keyboard.pressed_once(GLFW_KEY_R)) {
     g.render_wireframe = !g.render_wireframe;
@@ -95,9 +100,7 @@ void update() {
 
 void render() {
   g.renderer->prepare_world(g.world, g.render_wireframe, g.camera);
-  glDrawArrays(GL_TRIANGLES, 0, g.world.vertices().size() / 5);
-  VAO::unbind();
-
+  g.renderer->render_World(g.world);
   g.renderer->prepare_ui();
   g.renderer->render_ui(g.debug);
 }

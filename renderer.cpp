@@ -16,13 +16,6 @@ Renderer::Renderer(World &world)
       "proj",
       glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 100.0f));
 
-  world_vao.bind();
-  world_vbo.write(world.vertices().size() * sizeof(GLfloat),
-                  world.vertices().data());
-  world_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), 0);
-  world_shader.attr("texcoord", 2, GL_FLOAT, 5 * sizeof(float),
-                    (void *)(3 * sizeof(float)));
-
   font_shader.use();
   font_shader.set_int("font", 0);
   font_shader.set_mat4fv("proj",
@@ -38,6 +31,19 @@ void Renderer::prepare_world(World &world, bool wireframe,
   world_shader.set_mat4fv("view", camera.view());
   world_texture.bind();
   world_vao.bind();
+}
+
+void Renderer::render_World(World &world) {
+  if (world.chunk_changed) {
+    world_vbo.write(world.vertices().size() * sizeof(GLfloat),
+                    world.vertices().data());
+    world_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), 0);
+    world_shader.attr("texcoord", 2, GL_FLOAT, 5 * sizeof(float),
+                      (void *)(3 * sizeof(float)));
+    world.chunk_changed = false; // should do at update()?
+  }
+  glDrawArrays(GL_TRIANGLES, 0, world.vertices().size() / 5);
+  VAO::unbind();
 }
 
 void Renderer::prepare_ui() {
