@@ -1,17 +1,21 @@
 #pragma once
 
+#include <optional>
 #include <glm/glm.hpp>
 #include "chunk.h"
 
 class World {
-  glm::dvec2 pos; // player pos
+  glm::vec3 player_position;
   std::vector<GLfloat> chunk_vertices;
   std::vector<Chunk> chunks;
 
 public:
   bool chunk_changed = true;
-  // Chunk chunk; // current chunk under player pos--bring back to private
+  std::optional<glm::ivec2> prev_chunk;
+  glm::ivec2 current_chunk;
 
-  World();
-  std::vector<GLfloat> &vertices();
+  explicit World(glm::vec3 start_position);
+  void set_position(glm::vec3 new_pos);
+  void finished_rendering();
+  const std::vector<GLfloat> &vertices() const;
 };

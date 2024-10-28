@@ -1,25 +1,53 @@
 #include "world.h"
 
-std::vector<glm::ivec2> neighbors(glm::ivec2 pos) {
+int map_interval(const double x) {
+  const float abs = std::abs(x);
+  if (abs < 8.0)
+    return 0;
+  const int res = 1 + static_cast<int>(abs - 8) / 16;
+  return x >= 0 ? res : -res;
+}
+
+glm::ivec2 pos_to_chunk(const glm::vec3 pos) {
+  return glm::ivec2{map_interval(pos.x), map_interval(pos.z)};
+}
+
+std::vector<glm::ivec2> neighbors(const glm::ivec2 position) {
   return std::vector{
-      pos + glm::ivec2{-1, -1}, pos + glm::ivec2{-1, 0}, glm::ivec2{-1, 1},
-      pos + glm::ivec2{0, -1},  pos + glm::ivec2{0, 0},  pos + glm::ivec2{0, 1},
-      pos + glm::ivec2{1, -1},  pos + glm::ivec2{1, 0},  pos + glm::ivec2{1, 1},
+      position + glm::ivec2{-1, -1}, position + glm::ivec2{-1, 0},
+      position + glm::ivec2{-1, 1},  position + glm::ivec2{0, -1},
+      position + glm::ivec2{0, 0},   position + glm::ivec2{0, 1},
+      position + glm::ivec2{1, -1},  position + glm::ivec2{1, 0},
+      position + glm::ivec2{1, 1},
   };
 }
 
-World::World() : pos{0, 0} {
-  for (auto coord : neighbors(pos)) {
-    Chunk c{coord.x, coord.y};
-    c.emit_cubes(chunk_vertices);
-    chunks.push_back(c);
+void update_chunks(std::vector<Chunk> &chunks, const glm::ivec2 current_chunk) {
+  chunks.clear();
+  for (const auto coord : neighbors(current_chunk))
+    chunks.emplace_back(Chunk{coord.x, coord.y});
+}
+
+void emit_vertices(const std::vector<Chunk> &chunks,
+                   std::vector<GLfloat> &vertices) {
+  vertices.clear();
+  for (auto &chunk : chunks)
+    chunk.emit_cubes(vertices);
+}
+
+World::World(const glm::vec3 start_position) { set_position(start_position); }
+
+void World::set_position(const glm::vec3 new_pos) {
+  player_position = new_pos;
+  current_chunk = pos_to_chunk(player_position);
+  if (prev_chunk != current_chunk) {
+    chunk_changed = true; // signals the renderer to upload the data to the gpu
+    update_chunks(chunks, current_chunk);
+    emit_vertices(chunks, chunk_vertices);
+    prev_chunk = current_chunk;
   }
 }
 
-std::vector<GLfloat> &World::vertices() {
-  if (chunk_changed) {
-    // chunk_vertices.clear();
-    // chunk.emit_cubes(chunk_vertices);
-  }
-  return chunk_vertices;
-}
+void World::finished_rendering() { chunk_changed = false; }
+
+const std::vector<GLfloat> &World::vertices() const { return chunk_vertices; }

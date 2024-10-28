@@ -21,8 +21,8 @@ class Renderer {
 public:
   Renderer(World &world);
 
-  void prepare_world(World &world, bool wireframe, const Camera &camera);
-  void render_world(World &world);
-  void prepare_ui();
-  void render_ui(const Debug &debug);
+  void prepare_world(World &world, bool wireframe, const Camera &camera) const;
+  void render_world(const World &world, bool update_vertices) const;
+  void prepare_ui() const;
+  void render_ui(const Debug &debug) const;
 };

@@ -23,7 +23,7 @@ Renderer::Renderer(World &world)
 }
 
 void Renderer::prepare_world(World &world, bool wireframe,
-                             const Camera &camera) {
+                             const Camera &camera) const {
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
@@ -33,28 +33,28 @@ void Renderer::prepare_world(World &world, bool wireframe,
   world_vao.bind();
 }
 
-void Renderer::render_world(World &world) {
-  if (world.chunk_changed) {
-    world_vbo.write(world.vertices().size() * sizeof(GLfloat),
-                    world.vertices().data());
+void Renderer::render_world(const World &world,
+                            const bool update_vertices) const {
+  if (update_vertices) {
+    auto vertices = world.vertices();
+    world_vbo.write(vertices.size() * sizeof(GLfloat), vertices.data());
     world_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), 0);
     world_shader.attr("texcoord", 2, GL_FLOAT, 5 * sizeof(float),
                       (void *)(3 * sizeof(float)));
-    world.chunk_changed = false; // should do at update()?
   }
   glDrawArrays(GL_TRIANGLES, 0, world.vertices().size() / 5);
   VAO::unbind();
 }
 
-void Renderer::prepare_ui() {
+void Renderer::prepare_ui() const {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   font_shader.use();
   font_texture.bind();
   font_vao.bind();
 }
 
-void Renderer::render_ui(const Debug &debug) {
-  auto lines = debug.lines();
+void Renderer::render_ui(const Debug &debug) const {
+  const auto lines = debug.lines();
   std::vector<GLfloat> quad = make_quads(lines);
   font_vbo.write(quad.size() * sizeof(GLfloat), quad.data());
   font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);

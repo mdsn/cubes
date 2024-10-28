@@ -5,15 +5,15 @@
 #include "window.h"
 #include "world.h"
 
+const glm::vec3 INITIAL_POSITION{glm::vec3{0, 3, 0}};
+
 struct State {
   bool render_wireframe{false};
-  glm::ivec2 prev_chunk;
-  glm::ivec2 current_chunk;
-  Camera camera{glm::vec3{0, 3, 0}};
+  Camera camera{INITIAL_POSITION};
   Debug debug;
   Window *window;
   Renderer *renderer;
-  World world;
+  World world{INITIAL_POSITION};
 };
 
 extern State state;
