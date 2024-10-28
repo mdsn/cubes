@@ -33,7 +33,7 @@ void Renderer::prepare_world(World &world, bool wireframe,
   world_vao.bind();
 }
 
-void Renderer::render_World(World &world) {
+void Renderer::render_world(World &world) {
   if (world.chunk_changed) {
     world_vbo.write(world.vertices().size() * sizeof(GLfloat),
                     world.vertices().data());

@@ -80,7 +80,7 @@ void update() {
   // calculate position to chunk (fvec3 -> ivec2)
   g.current_chunk = pos_to_chunk(g.camera.pos);
   if (g.prev_chunk != g.current_chunk) {
-    g.world.chunk = Chunk{g.current_chunk.x, g.current_chunk.y};
+    // g.world.chunk = Chunk{g.current_chunk.x, g.current_chunk.y};
     g.world.chunk_changed = true;
   }
   g.prev_chunk = g.current_chunk;
@@ -100,7 +100,7 @@ void update() {
 
 void render() {
   g.renderer->prepare_world(g.world, g.render_wireframe, g.camera);
-  g.renderer->render_World(g.world);
+  g.renderer->render_world(g.world);
   g.renderer->prepare_ui();
   g.renderer->render_ui(g.debug);
 }
