@@ -7,7 +7,8 @@
 
 struct State {
   bool render_wireframe{false};
-  Camera camera{glm::vec3{0, 0, 5.0}};
+  glm::ivec2 current_chunk;
+  Camera camera{glm::vec3{0, 0, 0}};
   Debug debug;
   Window *window;
   Renderer *renderer;

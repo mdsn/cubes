@@ -3,8 +3,8 @@
 Chunk::Chunk(int x, int z) : x(x), z(z), cubes({}) {
   CubeTex tex{16, 16, 16, 16, 0, 32};
 
-  for (int i = 0; i < CHUNK_SIZE; i++)
-    for (int j = 0; j < CHUNK_SIZE; j++) {
+  for (int i = -CHUNK_SIZE / 2; i < CHUNK_SIZE / 2; i++)
+    for (int j = -CHUNK_SIZE / 2; j < CHUNK_SIZE / 2; j++) {
       cubes.emplace_back(static_cast<float>(x * CHUNK_SIZE + i), 0,
                          static_cast<float>(z * CHUNK_SIZE + j), tex);
     }

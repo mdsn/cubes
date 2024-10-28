@@ -2,15 +2,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
-#include <string>
 #include <vector>
 #include "gfx.h"
 #include "camera.h"
-#include "chunk.h"
 #include "shader.h"
 #include "vao.h"
-#include "vbo.h"
-#include "texture.h"
 #include "window.h"
 #include "state.h"
 #include "renderer.h"
@@ -65,9 +61,24 @@ void handle_motion_input(double dt) {
   }
 }
 
+int map_interval(float x) {
+  float abs = std::abs(x);
+  if (abs < 8.0)
+    return 0;
+  int res = 1 + static_cast<int>(abs - 8) / 16;
+  return x >= 0 ? res : -res;
+}
+
+glm::ivec2 pos_to_chunk(const glm::vec3 pos) {
+  return glm::ivec2{map_interval(pos.x), map_interval(pos.z)};
+}
+
 void update() {
   handle_mouse_input();
   handle_motion_input(g.window->time_delta);
+
+  // calculate position to chunk (fvec3 -> ivec2)
+  g.current_chunk = pos_to_chunk(g.camera.pos);
 
   if (g.window->keyboard.pressed_once(GLFW_KEY_R)) {
     g.render_wireframe = !g.render_wireframe;
@@ -78,6 +89,7 @@ void update() {
   }
 
   g.debug.camera_pos = g.camera.pos;
+  g.debug.chunk = g.current_chunk;
   g.debug.time_delta = g.window->time_delta;
 }
 
