@@ -39,7 +39,7 @@ void Renderer::render_world(const World &world,
     world_vbo.write(vertices.size() * sizeof(GLfloat), vertices.data());
     world_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), 0);
     world_shader.attr("texcoord", 2, GL_FLOAT, 5 * sizeof(float),
-                      (void *)(3 * sizeof(float)));
+                      reinterpret_cast<void *>(3 * sizeof(float)));
   }
   glDrawArrays(GL_TRIANGLES, 0, world.vertices().size() / 5);
   VAO::unbind();
