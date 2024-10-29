@@ -1,3 +1,4 @@
+#include <ranges>
 #include "world.h"
 
 int map_interval(const double x) {
@@ -12,19 +13,17 @@ glm::ivec2 pos_to_chunk(const glm::vec3 pos) {
   return glm::ivec2{map_interval(pos.x), map_interval(pos.z)};
 }
 
-std::vector<glm::ivec2> neighbors(const glm::ivec2 position) {
-  return std::vector{
-      position + glm::ivec2{-1, -1}, position + glm::ivec2{-1, 0},
-      position + glm::ivec2{-1, 1},  position + glm::ivec2{0, -1},
-      position + glm::ivec2{0, 0},   position + glm::ivec2{0, 1},
-      position + glm::ivec2{1, -1},  position + glm::ivec2{1, 0},
-      position + glm::ivec2{1, 1},
-  };
+std::vector<glm::ivec2> neighbors(const glm::ivec2 position, int layers) {
+  std::vector<glm::ivec2> vec{};
+  for (int x = -layers; x < layers; x++)
+    for (int y = -layers; y < layers; y++)
+      vec.emplace_back(position + glm::ivec2{x, y});
+  return vec;
 }
 
 void update_chunks(std::vector<Chunk> &chunks, const glm::ivec2 current_chunk) {
   chunks.clear();
-  for (const auto coord : neighbors(current_chunk))
+  for (const auto coord : neighbors(current_chunk, 4))
     chunks.emplace_back(Chunk{coord.x, coord.y});
 }
 
