@@ -18,14 +18,14 @@ class Keyboard {
   Key keys[GLFW_KEY_LAST];
 
 public:
-  bool pressed_once(int key) {
-    bool pressed = keys[key].down && !keys[key].before;
+  bool pressed_once(const int key) {
+    const bool pressed = keys[key].down && !keys[key].before;
     keys[key].before = keys[key].down;
     return pressed;
   }
-  bool held(int key) { return keys[key].down; }
-  void press(int key) { keys[key].down = true; }
-  void release(int key) { keys[key].down = false; }
+  bool held(const int key) const { return keys[key].down; }
+  void press(const int key) { keys[key].down = true; }
+  void release(const int key) { keys[key].down = false; }
 };
 
 class Window {
@@ -41,11 +41,9 @@ public:
   float time_delta;
   GLFWwindow *handle;
 
-  static void Init(float width, float height, UpdateFn update, RenderFn render);
-  glm::vec2 dimensions() const;
+  Window(float width, float height, const char *title, const UpdateFn &update,
+         const RenderFn &render);
   ~Window();
-
+  glm::vec2 dimensions() const;
   void loop();
 };
-
-extern Window window;

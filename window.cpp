@@ -3,38 +3,31 @@
 
 #include "window.h"
 
-const char *WINDOW_TITLE = "BRIX";
-
-// Global window--thanks jdh
-Window window;
-
 void _error_callback(int code, const char *err) {
   std::cerr << "GLFW error " << code << ": " << err << std::endl;
 }
 
 void _key_callback(GLFWwindow *handle, int key, int scancode, int action,
                    int mods) {
+  const auto window = static_cast<Window *>(glfwGetWindowUserPointer(handle));
   if (key < 0)
     return;
   switch (action) {
   case GLFW_PRESS:
-    window.keyboard.press(key);
+    window->keyboard.press(key);
     break;
   case GLFW_RELEASE:
-    window.keyboard.release(key);
+    window->keyboard.release(key);
     break;
   }
 }
 
-void Window::Init(float width, float height, UpdateFn update, RenderFn render) {
-  window.size = glm::vec2{width, height};
-  window.update = update;
-  window.render = render;
-
+Window::Window(const float width, const float height, const char *title,
+               const UpdateFn &update, const RenderFn &render)
+    : size{width, height}, update{update}, render{render} {
   glfwSetErrorCallback(_error_callback);
-  if (!glfwInit()) {
+  if (!glfwInit())
     std::exit(-1);
-  }
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -42,19 +35,19 @@ void Window::Init(float width, float height, UpdateFn update, RenderFn render) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  window.handle =
-      glfwCreateWindow(window.size.x, window.size.y, WINDOW_TITLE, NULL, NULL);
-  if (!window.handle) {
+  handle = glfwCreateWindow(size.x, size.y, title, NULL, NULL);
+  if (!handle) {
     glfwTerminate();
     std::exit(-1);
   }
 
-  glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSetInputMode(window.handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-  glfwSetKeyCallback(window.handle, _key_callback);
+  glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetInputMode(handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+  glfwSetWindowUserPointer(handle, this);
+  glfwSetKeyCallback(handle, _key_callback);
 
-  glfwMakeContextCurrent(window.handle);
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+  glfwMakeContextCurrent(handle);
+  if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
     glfwTerminate();
     std::exit(-1);
   }

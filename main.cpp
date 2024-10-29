@@ -10,8 +10,9 @@
 #include "state.h"
 #include "renderer.h"
 
-constexpr float WINDOW_WIDTH = 800.0f;
-constexpr float WINDOW_HEIGHT = 600.0f;
+constexpr float WINDOW_WIDTH{800.0};
+constexpr float WINDOW_HEIGHT{600.0};
+const char *WINDOW_TITLE{"BRIX"};
 
 // All global state
 State g;
@@ -72,11 +73,9 @@ void render() {
 }
 
 int main() {
-  Window::Init(WINDOW_WIDTH, WINDOW_HEIGHT, update, render);
-  g.window = &window;
-  g.renderer = std::make_unique<Renderer>(window.dimensions());
-
-  window.loop();
-
+  g.window = std::make_unique<Window>(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE,
+                                      update, render);
+  g.renderer = std::make_unique<Renderer>(g.window->dimensions());
+  g.window->loop();
   return 0;
 }

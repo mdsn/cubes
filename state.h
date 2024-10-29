@@ -12,7 +12,7 @@ struct State {
   bool render_wireframe{false};
   Camera camera{INITIAL_POSITION};
   Debug debug;
-  Window *window;
+  std::unique_ptr<Window> window;
   std::unique_ptr<Renderer> renderer;
   World world{INITIAL_POSITION};
 };
