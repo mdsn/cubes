@@ -1,14 +1,17 @@
 #include <iostream>
 #include <cstdlib>
+#include <utility>
 
 #include "window.h"
 
-void _error_callback(int code, const char *err) {
+void glfw_error_callback(int code, const char *err) {
   std::cerr << "GLFW error " << code << ": " << err << std::endl;
 }
 
-void _key_callback(GLFWwindow *handle, int key, int scancode, int action,
-                   int mods) {
+void glfw_key_callback(GLFWwindow *handle, int key, int scancode, int action,
+                       int mods) {
+  (void)scancode; // Silence unused warnings
+  (void)mods;
   const auto window = static_cast<Window *>(glfwGetWindowUserPointer(handle));
   if (key < 0)
     return;
@@ -19,13 +22,15 @@ void _key_callback(GLFWwindow *handle, int key, int scancode, int action,
   case GLFW_RELEASE:
     window->keyboard.release(key);
     break;
+  default:
   }
 }
 
 Window::Window(const float width, const float height, const char *title,
-               const UpdateFn &update, const RenderFn &render)
-    : size{width, height}, update{update}, render{render} {
-  glfwSetErrorCallback(_error_callback);
+               UpdateFn update, RenderFn render)
+    : size{width, height}, update{std::move(update)}, render{std::move(render)},
+      time_delta{0} {
+  glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit())
     std::exit(-1);
 
@@ -35,7 +40,8 @@ Window::Window(const float width, const float height, const char *title,
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  handle = glfwCreateWindow(size.x, size.y, title, NULL, NULL);
+  handle = glfwCreateWindow(static_cast<int>(size.x), static_cast<int>(size.y),
+                            title, nullptr, nullptr);
   if (!handle) {
     glfwTerminate();
     std::exit(-1);
@@ -44,7 +50,7 @@ Window::Window(const float width, const float height, const char *title,
   glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetInputMode(handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
   glfwSetWindowUserPointer(handle, this);
-  glfwSetKeyCallback(handle, _key_callback);
+  glfwSetKeyCallback(handle, glfw_key_callback);
 
   glfwMakeContextCurrent(handle);
   if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {

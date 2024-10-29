@@ -15,7 +15,7 @@ struct Key {
 };
 
 class Keyboard {
-  Key keys[GLFW_KEY_LAST];
+  Key keys[GLFW_KEY_LAST]{};
 
 public:
   bool pressed_once(const int key) {
@@ -23,7 +23,7 @@ public:
     keys[key].before = keys[key].down;
     return pressed;
   }
-  bool held(const int key) const { return keys[key].down; }
+  [[nodiscard]] bool held(const int key) const { return keys[key].down; }
   void press(const int key) { keys[key].down = true; }
   void release(const int key) { keys[key].down = false; }
 };
@@ -41,9 +41,9 @@ public:
   float time_delta;
   GLFWwindow *handle;
 
-  Window(float width, float height, const char *title, const UpdateFn &update,
-         const RenderFn &render);
+  Window(float width, float height, const char *title, UpdateFn update,
+         RenderFn render);
   ~Window();
-  glm::vec2 dimensions() const;
+  [[nodiscard]] glm::vec2 dimensions() const;
   void loop();
 };

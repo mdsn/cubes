@@ -8,12 +8,10 @@ void Camera::update(float dx, float dy) {
 }
 
 glm::vec3 Camera::front() const {
-  glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(pitch),
-                                   glm::vec3(1.0f, 0.0f, 0.0f));
-  rotation =
-      glm::rotate(rotation, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-  return glm::normalize(
-      make_vec3(glm::vec4{0.0f, 0.0f, 1.0f, 0.0f} * rotation));
+  glm::mat4 rotation =
+      rotate(glm::mat4(1.0f), glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+  rotation = rotate(rotation, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+  return normalize(make_vec3(glm::vec4{0.0f, 0.0f, 1.0f, 0.0f} * rotation));
 }
 
 glm::mat4 Camera::view() const {
@@ -23,5 +21,5 @@ glm::mat4 Camera::view() const {
   // If we switch the subtraction order around we now get a vector
   // pointing towards the camera's positive z-axis
   // https://learnopengl.com/Getting-started/Camera
-  return glm::lookAt(pos, pos - front(), up);
+  return lookAt(pos, pos - front(), up);
 }
