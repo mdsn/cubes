@@ -2,6 +2,11 @@
 #include "renderer.h"
 #include "font.h"
 
+void clear_screen() {
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 Renderer::Renderer(const glm::vec2 window_size)
     : world_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"},
       world_texture{"resources/fogletexture.png"},
@@ -22,24 +27,21 @@ Renderer::Renderer(const glm::vec2 window_size)
                                             0.0f, -1.0f, 1.0f));
 }
 
-void Renderer::render_world(const World &world, const Camera &camera,
-                            const bool wireframe,
+void Renderer::render_world(const std::vector<GLfloat> &vertices,
+                            const glm::mat4 &view, const bool wireframe,
                             const bool update_vertices) const {
-  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
   world_shader.use();
-  world_shader.set_mat4fv("view", camera.view());
+  world_shader.set_mat4fv("view", view);
   world_texture.bind();
   world_vao.bind();
   if (update_vertices) {
-    auto vertices = world.vertices();
     world_vbo.write(vertices.size() * sizeof(GLfloat), vertices.data());
-    world_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), 0);
+    world_shader.attr("position", 3, GL_FLOAT, 5 * sizeof(float), nullptr);
     world_shader.attr("texcoord", 2, GL_FLOAT, 5 * sizeof(float),
                       reinterpret_cast<void *>(3 * sizeof(float)));
   }
-  glDrawArrays(GL_TRIANGLES, 0, world.vertices().size() / 5);
+  glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 5);
   VAO::unbind();
 }
 
@@ -51,7 +53,7 @@ void Renderer::render_ui(const Debug &debug) const {
   const auto lines = debug.lines();
   std::vector<GLfloat> quad = make_quads(lines);
   font_vbo.write(quad.size() * sizeof(GLfloat), quad.data());
-  font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), 0);
+  font_shader.attr("vertex", 4, GL_FLOAT, 4 * sizeof(GLfloat), nullptr);
   glDrawArrays(GL_TRIANGLES, 0, quad.size() / 4);
   VAO::unbind();
 }

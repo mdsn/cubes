@@ -1,11 +1,11 @@
 #pragma once
-#include "camera.h"
 #include "debug.h"
 #include "shader.h"
 #include "texture.h"
 #include "vao.h"
 #include "vbo.h"
-#include "world.h"
+
+void clear_screen();
 
 class Renderer {
   Shader world_shader;
@@ -19,10 +19,9 @@ class Renderer {
   VBO font_vbo;
 
 public:
-  explicit Renderer(const glm::vec2 window_size);
+  explicit Renderer(glm::vec2 window_size);
 
-  void render_world(const World &world, const Camera &camera,
-                             const bool wireframe,
-                             const bool update_vertices) const;
+  void render_world(const std::vector<GLfloat> &vertices, const glm::mat4 &view,
+                    bool wireframe, bool update_vertices) const;
   void render_ui(const Debug &debug) const;
 };

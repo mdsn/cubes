@@ -5,10 +5,11 @@
 #include "camera.h"
 #include "shader.h"
 #include "window.h"
+#include "world.h"
 #include "renderer.h"
 
-constexpr float WINDOW_WIDTH{800.0};
-constexpr float WINDOW_HEIGHT{600.0};
+constexpr float WINDOW_WIDTH{1400.0};
+constexpr float WINDOW_HEIGHT{900.0};
 const char *WINDOW_TITLE{"BRIX"};
 
 constexpr glm::vec3 INITIAL_POSITION{glm::vec3{0, 3, 0}};
@@ -73,8 +74,9 @@ void update() {
 }
 
 void render() {
-  st.renderer->render_world(st.world, st.camera, st.render_wireframe,
-                            st.world.chunk_changed);
+  clear_screen();
+  st.renderer->render_world(st.world.vertices(), st.camera.view(),
+                            st.render_wireframe, st.world.chunk_changed);
   st.world.finished_rendering();
   st.renderer->render_ui(st.debug);
 }

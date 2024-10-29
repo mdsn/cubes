@@ -1,5 +1,7 @@
 #include "camera.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 void Camera::update(float dx, float dy) {
   yaw += dx;   // yaw rotates camera left
   pitch += dy; // pitch rotates camera down

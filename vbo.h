@@ -9,5 +9,5 @@ public:
   VBO();
   ~VBO();
   void bind() const;
-  void write(size_t size, GLfloat *data) const;
+  void write(size_t size, const GLfloat *data) const;
 };
