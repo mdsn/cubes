@@ -10,8 +10,8 @@
 #include "state.h"
 #include "renderer.h"
 
-constexpr float width = 800.0f;
-constexpr float height = 600.0f;
+constexpr float WINDOW_WIDTH = 800.0f;
+constexpr float WINDOW_HEIGHT = 600.0f;
 
 // All global state
 State g;
@@ -23,16 +23,11 @@ void handle_mouse_input() {
   if (px || py) {
     constexpr float sensitivity = 0.1;
     glfwGetCursorPos(g.window->handle, &cx, &cy);
-    // std::cout << "cursor pos x " << cx << " y " << cy << std::endl;
-    const float dx = (cx - px) * sensitivity;
-    const float dy = (cy - py) * sensitivity;
-    g.camera.update(dx, dy);
-
+    g.camera.update((cx - px) * sensitivity, (cy - py) * sensitivity);
     px = cx;
     py = cy;
-  } else {
+  } else
     glfwGetCursorPos(g.window->handle, &px, &py);
-  }
 }
 
 void handle_motion_input(const double dt) {
@@ -68,7 +63,7 @@ void update() {
 }
 
 void render() {
-  g.renderer->prepare_world(g.world, g.render_wireframe, g.camera);
+  g.renderer->prepare_world(g.render_wireframe, g.camera);
   g.renderer->render_world(g.world, g.world.chunk_changed);
   g.world.finished_rendering();
 
@@ -77,9 +72,9 @@ void render() {
 }
 
 int main() {
-  Window::Init(800, 600, update, render);
+  Window::Init(WINDOW_WIDTH, WINDOW_HEIGHT, update, render);
   g.window = &window;
-  Renderer renderer{g.world};
+  Renderer renderer{window.dimensions()};
   g.renderer = &renderer;
 
   window.loop();

@@ -29,7 +29,7 @@ public:
 };
 
 class Window {
-  glm::ivec2 size;
+  glm::vec2 size;
   UpdateFn update;
   RenderFn render;
 
@@ -41,7 +41,8 @@ public:
   float time_delta;
   GLFWwindow *handle;
 
-  static void Init(int width, int height, UpdateFn update, RenderFn render);
+  static void Init(float width, float height, UpdateFn update, RenderFn render);
+  glm::vec2 dimensions() const;
   ~Window();
 
   void loop();

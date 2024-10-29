@@ -2,7 +2,7 @@
 #include "renderer.h"
 #include "font.h"
 
-Renderer::Renderer(World &world)
+Renderer::Renderer(const glm::vec2 window_size)
     : world_shader{"shaders/cubeVertex.glsl", "shaders/cubeFragment.glsl"},
       world_texture{"resources/fogletexture.png"},
       font_shader{"shaders/textVertex.glsl", "shaders/textFragment.glsl"},
@@ -12,18 +12,17 @@ Renderer::Renderer(World &world)
 
   world_shader.use();
   world_shader.set_int("fogletexture", 0);
-  world_shader.set_mat4fv( // XXX 800x600 hardcoded
-      "proj",
-      glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 100.0f));
+  world_shader.set_mat4fv(
+      "proj", glm::perspective(glm::radians(45.0f),
+                               window_size.x / window_size.y, 1.0f, 100.0f));
 
   font_shader.use();
   font_shader.set_int("font", 0);
-  font_shader.set_mat4fv("proj",
-                         glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f));
+  font_shader.set_mat4fv("proj", glm::ortho(0.0f, window_size.x, window_size.y,
+                                            0.0f, -1.0f, 1.0f));
 }
 
-void Renderer::prepare_world(World &world, bool wireframe,
-                             const Camera &camera) const {
+void Renderer::prepare_world(const bool wireframe, const Camera &camera) const {
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);

@@ -26,8 +26,8 @@ void _key_callback(GLFWwindow *handle, int key, int scancode, int action,
   }
 }
 
-void Window::Init(int width, int height, UpdateFn update, RenderFn render) {
-  window.size = glm::ivec2{width, height};
+void Window::Init(float width, float height, UpdateFn update, RenderFn render) {
+  window.size = glm::vec2{width, height};
   window.update = update;
   window.render = render;
 
@@ -61,6 +61,8 @@ void Window::Init(int width, int height, UpdateFn update, RenderFn render) {
 }
 
 Window::~Window() { glfwTerminate(); }
+
+glm::vec2 Window::dimensions() const { return size; }
 
 void Window::loop() {
   time_now = Clock::now();
