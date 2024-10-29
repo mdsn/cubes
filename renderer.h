@@ -21,8 +21,8 @@ class Renderer {
 public:
   explicit Renderer(const glm::vec2 window_size);
 
-  void prepare_world(bool wireframe, const Camera &camera) const;
-  void render_world(const World &world, bool update_vertices) const;
-  void prepare_ui() const;
+  void render_world(const World &world, const Camera &camera,
+                             const bool wireframe,
+                             const bool update_vertices) const;
   void render_ui(const Debug &debug) const;
 };

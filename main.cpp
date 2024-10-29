@@ -73,11 +73,9 @@ void update() {
 }
 
 void render() {
-  st.renderer->prepare_world(st.render_wireframe, st.camera);
-  st.renderer->render_world(st.world, st.world.chunk_changed);
+  st.renderer->render_world(st.world, st.camera, st.render_wireframe,
+                            st.world.chunk_changed);
   st.world.finished_rendering();
-
-  st.renderer->prepare_ui();
   st.renderer->render_ui(st.debug);
 }
 

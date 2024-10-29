@@ -22,7 +22,9 @@ Renderer::Renderer(const glm::vec2 window_size)
                                             0.0f, -1.0f, 1.0f));
 }
 
-void Renderer::prepare_world(const bool wireframe, const Camera &camera) const {
+void Renderer::render_world(const World &world, const Camera &camera,
+                            const bool wireframe,
+                            const bool update_vertices) const {
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
@@ -30,10 +32,6 @@ void Renderer::prepare_world(const bool wireframe, const Camera &camera) const {
   world_shader.set_mat4fv("view", camera.view());
   world_texture.bind();
   world_vao.bind();
-}
-
-void Renderer::render_world(const World &world,
-                            const bool update_vertices) const {
   if (update_vertices) {
     auto vertices = world.vertices();
     world_vbo.write(vertices.size() * sizeof(GLfloat), vertices.data());
@@ -45,14 +43,11 @@ void Renderer::render_world(const World &world,
   VAO::unbind();
 }
 
-void Renderer::prepare_ui() const {
+void Renderer::render_ui(const Debug &debug) const {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   font_shader.use();
   font_texture.bind();
   font_vao.bind();
-}
-
-void Renderer::render_ui(const Debug &debug) const {
   const auto lines = debug.lines();
   std::vector<GLfloat> quad = make_quads(lines);
   font_vbo.write(quad.size() * sizeof(GLfloat), quad.data());
