@@ -74,8 +74,7 @@ void render() {
 int main() {
   Window::Init(WINDOW_WIDTH, WINDOW_HEIGHT, update, render);
   g.window = &window;
-  Renderer renderer{window.dimensions()};
-  g.renderer = &renderer;
+  g.renderer = std::make_unique<Renderer>(window.dimensions());
 
   window.loop();
 

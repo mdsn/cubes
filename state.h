@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "camera.h"
 #include "debug.h"
 #include "renderer.h"
@@ -12,7 +13,7 @@ struct State {
   Camera camera{INITIAL_POSITION};
   Debug debug;
   Window *window;
-  Renderer *renderer;
+  std::unique_ptr<Renderer> renderer;
   World world{INITIAL_POSITION};
 };
 
