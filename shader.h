@@ -1,7 +1,7 @@
 #pragma once
+#include <string>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <string>
 
 // OpenGL program abstraction.
 // Compiles shaders, keeps track of the program id, and provides an interface to

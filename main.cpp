@@ -1,81 +1,90 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <fstream>
-#include <vector>
 #include "gfx.h"
 #include "camera.h"
 #include "shader.h"
 #include "window.h"
-#include "state.h"
 #include "renderer.h"
 
 constexpr float WINDOW_WIDTH{800.0};
 constexpr float WINDOW_HEIGHT{600.0};
 const char *WINDOW_TITLE{"BRIX"};
 
+constexpr glm::vec3 INITIAL_POSITION{glm::vec3{0, 3, 0}};
+
 // All global state
-State g;
+struct State {
+  bool render_wireframe{false};
+  Camera camera{INITIAL_POSITION};
+  Debug debug{};
+  std::unique_ptr<Window> window;
+  std::unique_ptr<Renderer> renderer;
+  World world{INITIAL_POSITION};
+};
+
+State st;
 
 void handle_mouse_input() {
   static double px{0}; // x grows positively towards the right of the screen
   static double py{0}; // y grows positively towards the bottom of the screen
   double cx, cy;
-  if (px || py) {
+  if (px != 0.0 || py != 0.0) {
     constexpr float sensitivity = 0.1;
-    glfwGetCursorPos(g.window->handle, &cx, &cy);
-    g.camera.update((cx - px) * sensitivity, (cy - py) * sensitivity);
+    glfwGetCursorPos(st.window->handle, &cx, &cy);
+    st.camera.update(static_cast<float>(cx - px) * sensitivity,
+                     static_cast<float>(cy - py) * sensitivity);
     px = cx;
     py = cy;
   } else
-    glfwGetCursorPos(g.window->handle, &px, &py);
+    glfwGetCursorPos(st.window->handle, &px, &py);
 }
 
-void handle_motion_input(const double dt) {
-  const float speed = 5.0 * dt;
-  if (g.window->keyboard.held(GLFW_KEY_W))
-    g.camera.pos -= g.camera.front() * speed;
-  if (g.window->keyboard.held(GLFW_KEY_S))
-    g.camera.pos += g.camera.front() * speed;
-  if (g.window->keyboard.held(GLFW_KEY_A))
-    g.camera.pos += normalize(cross(g.camera.front(), g.camera.up)) * speed;
-  if (g.window->keyboard.held(GLFW_KEY_D))
-    g.camera.pos -= normalize(cross(g.camera.front(), g.camera.up)) * speed;
-  if (g.window->keyboard.held(GLFW_KEY_SPACE))
-    g.camera.pos += normalize(g.camera.up) * speed;
-  if (g.window->keyboard.held(GLFW_KEY_LEFT_CONTROL))
-    g.camera.pos -= normalize(g.camera.up) * speed;
+void handle_motion_input(const float dt) {
+  const float speed = 5.0f * dt;
+  if (st.window->keyboard.held(GLFW_KEY_W))
+    st.camera.pos -= st.camera.front() * speed;
+  if (st.window->keyboard.held(GLFW_KEY_S))
+    st.camera.pos += st.camera.front() * speed;
+  if (st.window->keyboard.held(GLFW_KEY_A))
+    st.camera.pos += normalize(cross(st.camera.front(), st.camera.up)) * speed;
+  if (st.window->keyboard.held(GLFW_KEY_D))
+    st.camera.pos -= normalize(cross(st.camera.front(), st.camera.up)) * speed;
+  if (st.window->keyboard.held(GLFW_KEY_SPACE))
+    st.camera.pos += normalize(st.camera.up) * speed;
+  if (st.window->keyboard.held(GLFW_KEY_LEFT_CONTROL))
+    st.camera.pos -= normalize(st.camera.up) * speed;
 }
 
 void update() {
   handle_mouse_input();
-  handle_motion_input(g.window->time_delta);
+  handle_motion_input(st.window->time_delta);
 
-  g.world.set_position(g.camera.pos);
+  st.world.set_position(st.camera.pos);
 
-  if (g.window->keyboard.pressed_once(GLFW_KEY_R))
-    g.render_wireframe = !g.render_wireframe;
-  if (g.window->keyboard.pressed_once(GLFW_KEY_ESCAPE))
-    glfwSetWindowShouldClose(g.window->handle, GL_TRUE);
+  if (st.window->keyboard.pressed_once(GLFW_KEY_R))
+    st.render_wireframe = !st.render_wireframe;
+  if (st.window->keyboard.pressed_once(GLFW_KEY_ESCAPE))
+    glfwSetWindowShouldClose(st.window->handle, GL_TRUE);
 
-  g.debug.camera_pos = g.camera.pos;
-  g.debug.chunk = g.world.current_chunk;
-  g.debug.time_delta = g.window->time_delta;
+  st.debug.camera_pos = st.camera.pos;
+  st.debug.chunk = st.world.current_chunk;
+  st.debug.time_delta = st.window->time_delta;
 }
 
 void render() {
-  g.renderer->prepare_world(g.render_wireframe, g.camera);
-  g.renderer->render_world(g.world, g.world.chunk_changed);
-  g.world.finished_rendering();
+  st.renderer->prepare_world(st.render_wireframe, st.camera);
+  st.renderer->render_world(st.world, st.world.chunk_changed);
+  st.world.finished_rendering();
 
-  g.renderer->prepare_ui();
-  g.renderer->render_ui(g.debug);
+  st.renderer->prepare_ui();
+  st.renderer->render_ui(st.debug);
 }
 
 int main() {
-  g.window = std::make_unique<Window>(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE,
-                                      update, render);
-  g.renderer = std::make_unique<Renderer>(g.window->dimensions());
-  g.window->loop();
+  st.window = std::make_unique<Window>(WINDOW_WIDTH, WINDOW_HEIGHT,
+                                       WINDOW_TITLE, update, render);
+  st.renderer = std::make_unique<Renderer>(st.window->dimensions());
+  st.window->loop();
   return 0;
 }

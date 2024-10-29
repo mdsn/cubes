@@ -5,7 +5,6 @@
 #include "texture.h"
 #include "vao.h"
 #include "vbo.h"
-#include "window.h"
 #include "world.h"
 
 class Renderer {

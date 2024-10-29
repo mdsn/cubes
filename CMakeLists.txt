@@ -27,7 +27,6 @@ add_executable(brix main.cpp
         window.cpp
         window.h
         gfx.h
-        state.h
         world.cpp
         world.h
         renderer.cpp

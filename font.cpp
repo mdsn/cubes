@@ -1,8 +1,8 @@
 #include <glm/glm.hpp>
 #include "font.h"
 
-const int tile_width = 8;
-const int tile_height = 16;
+constexpr int TILE_WIDTH = 8;
+constexpr int TILE_HEIGHT = 16;
 
 #define CHAR(C, X, Y)                                                          \
   case C:                                                                      \
@@ -123,34 +123,34 @@ void emit_one(char c, int x, int y, std::vector<float> &vec) {
   // orthographic projection, but texture coordinates are in uv--the texture
   // coordinates go from 0 to 1 in both directions and grow to the right and
   // upwards, whereas the xy coordinates grow to the right and downwards
-  vec.push_back(x * tile_width);  // top left x
-  vec.push_back(y * tile_height); // top left y
+  vec.push_back(x * TILE_WIDTH);  // top left x
+  vec.push_back(y * TILE_HEIGHT); // top left y
   vec.push_back(tu);
   vec.push_back(tv + factor);
 
-  vec.push_back(x * tile_width);        // bottom left x
-  vec.push_back((y + 1) * tile_height); // bottom left y
+  vec.push_back(x * TILE_WIDTH);        // bottom left x
+  vec.push_back((y + 1) * TILE_HEIGHT); // bottom left y
   vec.push_back(tu);
   vec.push_back(tv);
 
-  vec.push_back((x + 1) * tile_width); // top right x
-  vec.push_back(y * tile_height);      // top right y
+  vec.push_back((x + 1) * TILE_WIDTH); // top right x
+  vec.push_back(y * TILE_HEIGHT);      // top right y
   vec.push_back(tu + factor);
   vec.push_back(tv + factor);
 
   // second triangle
-  vec.push_back((x + 1) * tile_width); // top right x
-  vec.push_back(y * tile_height);      // top right y
+  vec.push_back((x + 1) * TILE_WIDTH); // top right x
+  vec.push_back(y * TILE_HEIGHT);      // top right y
   vec.push_back(tu + factor);
   vec.push_back(tv + factor);
 
-  vec.push_back(x * tile_width);        // bottom left x
-  vec.push_back((y + 1) * tile_height); // bottom left y
+  vec.push_back(x * TILE_WIDTH);        // bottom left x
+  vec.push_back((y + 1) * TILE_HEIGHT); // bottom left y
   vec.push_back(tu);
   vec.push_back(tv);
 
-  vec.push_back((x + 1) * tile_width);  // bottom right x
-  vec.push_back((y + 1) * tile_height); // bottom right y
+  vec.push_back((x + 1) * TILE_WIDTH);  // bottom right x
+  vec.push_back((y + 1) * TILE_HEIGHT); // bottom right y
   vec.push_back(tu + factor);
   vec.push_back(tv);
 }
