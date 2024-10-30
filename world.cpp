@@ -15,7 +15,7 @@ glm::ivec2 pos_to_chunk(const glm::vec3 pos) {
   return glm::ivec2{map_interval(pos.x), map_interval(pos.z)};
 }
 
-std::vector<glm::ivec2> neighbors(const glm::ivec2 position, int layers) {
+std::vector<glm::ivec2> neighbors(const glm::ivec2 position, const int layers) {
   std::vector<glm::ivec2> vec{};
   for (int x = -layers; x < layers; x++)
     for (int y = -layers; y < layers; y++)
@@ -29,7 +29,7 @@ void update_chunks(std::vector<Chunk> &chunks, const glm::ivec2 current_chunk) {
   // update with a better data structure this replacement can be made cheaper
   chunks.clear();
   for (const auto coord : neighbors(current_chunk, CHUNK_RADIUS))
-    chunks.emplace_back(Chunk{coord.x, coord.y});
+    chunks.emplace_back(coord.x, coord.y);
 }
 
 void emit_vertices(const std::vector<Chunk> &chunks,

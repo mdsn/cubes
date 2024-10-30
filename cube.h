@@ -25,14 +25,12 @@ struct Face {
 };
 
 class Cube {
-  int ix, iy, iz;
-  float x, y, z;
   CubeTex tex;
 
 public:
-  Cube(float x, float y, float z, int ix, int iy, int iz, const CubeTex &tex);
-  glm::vec3 position() const;
-  glm::ivec3 iposition() const;
+  const glm::vec3 world_pos;
+  const glm::ivec3 chunk_pos;
+  Cube(glm::vec3 world_pos, glm::ivec3 chunk_pos, const CubeTex &tex);
   void emit_vertices(std::vector<GLfloat> &vec,
                      const std::vector<FaceDirection> &faces) const;
 };

@@ -1,14 +1,15 @@
 #include "chunk.h"
 
-Chunk::Chunk(const int x, const int z) : x(x), z(z), cubes({}) {
+Chunk::Chunk(const int x, const int z) : cubes({}) {
   CubeTex tex{16, 16, 16, 16, 0, 32};
 
   for (int i = 0; i < CHUNK_SIZE; i++)
     for (int j = 0; j < CHUNK_SIZE; j++) {
-      int ti = i - CHUNK_SIZE / 2;
-      int tj = j - CHUNK_SIZE / 2;
-      cubes.emplace_back(static_cast<float>(x * CHUNK_SIZE + ti), 0,
-                         static_cast<float>(z * CHUNK_SIZE + tj), i, 0, j, tex);
+      const int ti = i - CHUNK_SIZE / 2;
+      const int tj = j - CHUNK_SIZE / 2;
+      cubes.emplace_back(glm::vec3(static_cast<float>(x * CHUNK_SIZE + ti), 0,
+                                   static_cast<float>(z * CHUNK_SIZE + tj)),
+                         glm::ivec3(i, 0, j), tex);
       chunk_map[i][j] = true;
     }
 }
@@ -41,7 +42,7 @@ void Chunk::emit_cubes(std::vector<GLfloat> &vec) const {
   // TODO: also check neighbor chunk--will be necessary for terrain
   for (const Cube &cube : cubes) {
     std::vector<FaceDirection> faces{};
-    for (auto &[face, neighbor] : cube_neighbors(cube.iposition())) {
+    for (auto &[face, neighbor] : cube_neighbors(cube.chunk_pos)) {
       if (!within_chunk_bounds(neighbor) or !chunk_map[neighbor.x][neighbor.z])
         faces.push_back(face);
     }

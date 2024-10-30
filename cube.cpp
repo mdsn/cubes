@@ -58,12 +58,9 @@ CubeTex::CubeTex(const int front, const int right, const int left,
                  const int back, const int bottom, const int top)
     : t{front, right, left, back, bottom, top} {}
 
-Cube::Cube(const float x, const float y, const float z, const int ix,
-           const int iy, const int iz, const CubeTex &tex)
-    : ix(ix), iy(iy), iz(iz), x(x), y(y), z(z), tex(tex) {}
-
-glm::vec3 Cube::position() const { return glm::vec3{x, y, z}; }
-glm::ivec3 Cube::iposition() const { return glm::ivec3{ix, iy, iz}; }
+Cube::Cube(const glm::vec3 world_pos, const glm::ivec3 chunk_pos,
+           const CubeTex &tex)
+    : tex(tex), world_pos(world_pos), chunk_pos(chunk_pos) {}
 
 void Cube::emit_vertices(std::vector<GLfloat> &vec,
                          const std::vector<FaceDirection> &faces) const {
@@ -81,9 +78,9 @@ void Cube::emit_vertices(std::vector<GLfloat> &vec,
       const int ty{tex.t[i] / 16};
       const float du{tw * tx};
       const float dv{tw * ty};
-      vec.push_back(x + .5 * xyz.x);
-      vec.push_back(y + .5 * xyz.y);
-      vec.push_back(z + .5 * xyz.z);
+      vec.push_back(world_pos.x + .5 * xyz.x);
+      vec.push_back(world_pos.y + .5 * xyz.y);
+      vec.push_back(world_pos.z + .5 * xyz.z);
       vec.push_back(du + (uv.x ? tw : 0));
       vec.push_back(dv + (uv.y ? tw : 0));
     }
