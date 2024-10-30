@@ -14,10 +14,6 @@ struct Vertex {
   glm::ivec2 uv;
 };
 
-struct Triangle {
-  Vertex points[3];
-};
-
 enum class FaceDirection { front, right, left, back, bottom, top };
 
 struct Face {
@@ -25,7 +21,7 @@ struct Face {
   glm::vec3 vertices[4];
   int indices[6];
   glm::ivec2 texture[4]{{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-  std::array<Triangle, 2> triangles() const;
+  std::array<Vertex, 6> points() const;
 };
 
 class Cube {
@@ -37,7 +33,6 @@ public:
   Cube(float x, float y, float z, int ix, int iy, int iz, const CubeTex &tex);
   glm::vec3 position() const;
   glm::ivec3 iposition() const;
-  // TODO filter cubes altogether that are entirely surrounded by solid cubes
   void emit_vertices(std::vector<GLfloat> &vec,
                      std::vector<FaceDirection> faces) const;
 };

@@ -22,13 +22,15 @@ constexpr glm::vec3 F{+1, -1, -1};
 constexpr glm::vec3 G{+1, +1, -1};
 constexpr glm::vec3 H{-1, +1, -1};
 
-std::array<Triangle, 2> Face::triangles() const {
-  return std::array{Triangle{{{vertices[indices[0]], texture[indices[0]]},
-                              {vertices[indices[1]], texture[indices[1]]},
-                              {vertices[indices[2]], texture[indices[2]]}}},
-                    Triangle{{{vertices[indices[3]], texture[indices[3]]},
-                              {vertices[indices[4]], texture[indices[4]]},
-                              {vertices[indices[5]], texture[indices[5]]}}}};
+std::array<Vertex, 6> Face::points() const {
+  return std::array{
+      Vertex{vertices[indices[0]], texture[indices[0]]},
+      Vertex{vertices[indices[1]], texture[indices[1]]},
+      Vertex{vertices[indices[2]], texture[indices[2]]},
+      Vertex{vertices[indices[3]], texture[indices[3]]},
+      Vertex{vertices[indices[4]], texture[indices[4]]},
+      Vertex{vertices[indices[5]], texture[indices[5]]},
+  };
 }
 
 constexpr std::array<Face, 6> positions{
@@ -92,18 +94,16 @@ void Cube::emit_vertices(std::vector<GLfloat> &vec,
       continue;
     }
 
-    for (const auto &[points] : face.triangles()) {
-      for (const auto &[xyz, uv] : points) {
-        const int tx{tex.t[i] % 16};
-        const int ty{tex.t[i] / 16};
-        const float du{tw * tx};
-        const float dv{tw * ty};
-        vec.push_back(x + .5 * xyz.x);
-        vec.push_back(y + .5 * xyz.y);
-        vec.push_back(z + .5 * xyz.z);
-        vec.push_back(du + (uv.x ? tw : 0));
-        vec.push_back(dv + (uv.y ? tw : 0));
-      }
+    for (const auto &[xyz, uv] : face.points()) {
+      const int tx{tex.t[i] % 16};
+      const int ty{tex.t[i] / 16};
+      const float du{tw * tx};
+      const float dv{tw * ty};
+      vec.push_back(x + .5 * xyz.x);
+      vec.push_back(y + .5 * xyz.y);
+      vec.push_back(z + .5 * xyz.z);
+      vec.push_back(du + (uv.x ? tw : 0));
+      vec.push_back(dv + (uv.y ? tw : 0));
     }
 
     i++;
