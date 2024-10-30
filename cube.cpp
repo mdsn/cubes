@@ -84,7 +84,7 @@ glm::vec3 Cube::position() const { return glm::vec3{x, y, z}; }
 glm::ivec3 Cube::iposition() const { return glm::ivec3{ix, iy, iz}; }
 
 void Cube::emit_vertices(std::vector<GLfloat> &vec,
-                         const std::vector<FaceDirection> faces) const {
+                         const std::vector<FaceDirection> &faces) const {
   // 5 components: 3 for position, 2 for texture coord
   // layout defined in specify_cube_vertex_attributes
   int i = 0;

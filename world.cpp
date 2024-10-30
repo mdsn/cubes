@@ -1,6 +1,8 @@
 #include <ranges>
 #include "world.h"
 
+constexpr int CHUNK_RADIUS = 4;
+
 int map_interval(const double x) {
   const float abs = std::abs(x);
   if (abs < 8.0)
@@ -22,8 +24,11 @@ std::vector<glm::ivec2> neighbors(const glm::ivec2 position, int layers) {
 }
 
 void update_chunks(std::vector<Chunk> &chunks, const glm::ivec2 current_chunk) {
+  // TODO only remove chunks behind us and create the new ones!!!
+  // current_chunk - prev_chunk gives a vector in the direction of the chunk
+  // update with a better data structure this replacement can be made cheaper
   chunks.clear();
-  for (const auto coord : neighbors(current_chunk, 4))
+  for (const auto coord : neighbors(current_chunk, CHUNK_RADIUS))
     chunks.emplace_back(Chunk{coord.x, coord.y});
 }
 

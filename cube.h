@@ -34,5 +34,5 @@ public:
   glm::vec3 position() const;
   glm::ivec3 iposition() const;
   void emit_vertices(std::vector<GLfloat> &vec,
-                     std::vector<FaceDirection> faces) const;
+                     const std::vector<FaceDirection> &faces) const;
 };
