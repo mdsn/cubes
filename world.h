@@ -1,13 +1,16 @@
 #pragma once
 
+#include <unordered_map>
 #include <optional>
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/hash.hpp" // hash ivec2
 #include "chunk.h"
 
 class World {
   glm::vec3 player_position;
   std::vector<GLfloat> chunk_vertices;
-  std::vector<Chunk> chunks;
+  std::unordered_map<glm::ivec2, Chunk> chunks;
 
 public:
   bool chunk_changed = true;
