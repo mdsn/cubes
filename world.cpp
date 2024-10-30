@@ -1,10 +1,9 @@
 #include <algorithm>
-#include <iterator>
 #include "world.h"
 
 #include <unordered_set>
 
-constexpr int CHUNK_RADIUS = 4;
+constexpr int CHUNK_RADIUS = 3;
 
 int map_interval(const double x) {
   const float abs = std::abs(x);
@@ -37,22 +36,30 @@ std::unordered_set<glm::ivec2> disk(const glm::ivec2 position,
   return set;
 }
 
-// still too slow
 void update_chunks(std::unordered_map<glm::ivec2, Chunk> &chunks,
                    const std::optional<glm::ivec2> previous_chunk,
                    const glm::ivec2 current_chunk) {
   if (previous_chunk.has_value()) {
-    const auto prev_chunk_disk = disk(previous_chunk.value(), CHUNK_RADIUS);
-    auto cur_chunk_disk = disk(current_chunk, CHUNK_RADIUS);
-    // remove chunks outside current radius
-    for (auto pos : prev_chunk_disk) {
-      if (std::ranges::find(cur_chunk_disk, pos) == std::end(cur_chunk_disk))
-        chunks.erase(pos);
-    }
-    // add new chunks inside the current radius
-    for (auto pos : cur_chunk_disk) {
-      if (std::ranges::find(prev_chunk_disk, pos) == std::end(prev_chunk_disk))
+    auto direction = current_chunk - previous_chunk.value();
+    // moving in x direction
+    if (direction.x != 0) {
+      for (int z = -CHUNK_RADIUS; z <= CHUNK_RADIUS; z++) {
+        chunks.erase(
+            glm::ivec2{current_chunk.x - direction.x * (CHUNK_RADIUS + 1),
+                       current_chunk.y + z});
+        auto pos = glm::ivec2{current_chunk.x + direction.x * CHUNK_RADIUS,
+                              current_chunk.y + z};
         chunks.emplace(pos, Chunk{pos.x, pos.y});
+      }
+    } else { // moving in z direction
+      for (int x = -CHUNK_RADIUS; x <= CHUNK_RADIUS; x++) {
+        chunks.erase(
+            glm::ivec2{current_chunk.x + x,
+                       current_chunk.y - direction.y * (CHUNK_RADIUS + 1)});
+        auto pos = glm::ivec2{current_chunk.x + x,
+                              current_chunk.y + direction.y * CHUNK_RADIUS};
+        chunks.emplace(pos, Chunk{pos.x, pos.y});
+      }
     }
   } else {
     chunks.clear();
