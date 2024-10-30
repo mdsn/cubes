@@ -3,7 +3,7 @@
 
 #include <unordered_set>
 
-constexpr int CHUNK_RADIUS = 3;
+constexpr int CHUNK_RADIUS = 4;
 
 int map_interval(const double x) {
   const float abs = std::abs(x);
@@ -43,21 +43,21 @@ void update_chunks(std::unordered_map<glm::ivec2, Chunk> &chunks,
     auto direction = current_chunk - previous_chunk.value();
     // moving in x direction
     if (direction.x != 0) {
+      const int erase_line = current_chunk.x - direction.x * (CHUNK_RADIUS + 1);
+      const int emplace_line = current_chunk.x + direction.x * CHUNK_RADIUS;
       for (int z = -CHUNK_RADIUS; z <= CHUNK_RADIUS; z++) {
-        chunks.erase(
-            glm::ivec2{current_chunk.x - direction.x * (CHUNK_RADIUS + 1),
-                       current_chunk.y + z});
-        auto pos = glm::ivec2{current_chunk.x + direction.x * CHUNK_RADIUS,
-                              current_chunk.y + z};
+        auto pos = glm::ivec2{erase_line, current_chunk.y + z};
+        chunks.erase(pos);
+        pos.x = emplace_line;
         chunks.emplace(pos, Chunk{pos.x, pos.y});
       }
     } else { // moving in z direction
+      const int erase_line = current_chunk.y - direction.y * (CHUNK_RADIUS + 1);
+      const int emplace_line = current_chunk.y + direction.y * CHUNK_RADIUS;
       for (int x = -CHUNK_RADIUS; x <= CHUNK_RADIUS; x++) {
-        chunks.erase(
-            glm::ivec2{current_chunk.x + x,
-                       current_chunk.y - direction.y * (CHUNK_RADIUS + 1)});
-        auto pos = glm::ivec2{current_chunk.x + x,
-                              current_chunk.y + direction.y * CHUNK_RADIUS};
+        auto pos = glm::ivec2{current_chunk.x + x, erase_line};
+        chunks.erase(pos);
+        pos.y = emplace_line;
         chunks.emplace(pos, Chunk{pos.x, pos.y});
       }
     }
