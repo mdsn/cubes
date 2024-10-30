@@ -32,7 +32,8 @@ cube_neighbors(glm::ivec3 pos) {
 }
 
 bool within_chunk_bounds(glm::ivec3 pos) {
-  return pos.x >= 0 and pos.x < CHUNK_SIZE and pos.y == 0 // XXX
+  return pos.x >= 0 and pos.x < CHUNK_SIZE and
+         pos.y == 0 // XXX y assumed to be 0 in the single-plank chunks
          and pos.z >= 0 and pos.z < CHUNK_SIZE;
 }
 

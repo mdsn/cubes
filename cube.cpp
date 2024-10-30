@@ -33,40 +33,22 @@ std::array<Vertex, 6> Face::points() const {
   };
 }
 
-constexpr std::array<Face, 6> positions{
-    {// front ACD, ABC (positive z)
-     {FaceDirection::front, A, B, C, D, {0, 2, 3, 0, 1, 2}},
-     // right BGC, BFG (positive x)
-     {FaceDirection::right, F, B, C, G, {1, 3, 2, 1, 0, 3}},
-     // left AHE, ADH (negative x)
-     {FaceDirection::left, E, A, D, H, {1, 3, 0, 1, 2, 3}},
-     // back FHG, FEH (negative z)
-     {FaceDirection::back, E, F, G, H, {1, 3, 2, 1, 0, 3}},
-     // bottom AEF, AFB (negative y)
-     {FaceDirection::bottom, E, A, B, F, {1, 0, 3, 1, 3, 2}},
-     // top DCG, DGH (positive y)
-     {FaceDirection::top, H, D, C, G, {1, 2, 3, 1, 3, 0}}}};
-
 // wind triangles counter-clockwise to face front. Each 6 element vector
 // indexes into the four vertices that make up a face, defining two triangles
 // that share two vertices.
-constexpr int indices[6][6]{
-    {0, 2, 3, 0, 1, 2}, // front ACD, ABC
-    {1, 3, 2, 1, 0, 3}, // right BGC, BFG
-    {1, 3, 0, 1, 2, 3}, // left AHE, ADH
-    {1, 3, 2, 1, 0, 3}, // back FHG, FEH
-    {1, 0, 3, 1, 3, 2}, // bottom AEF, AFB
-    {1, 2, 3, 1, 3, 0}  // top DCG, DGH
-};
-
-// texture coordinates--6 faces, four total vertices (2 are shared between
-// the two adjacent triangles making up once face), 2 texture coordinates
-// on each corner (2D coordinate).
-constexpr float uv[6][4][2]{
-    {{0, 0}, {1, 0}, {1, 1}, {0, 1}}, {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
-    {{0, 0}, {1, 0}, {1, 1}, {0, 1}}, {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
-    {{0, 0}, {1, 0}, {1, 1}, {0, 1}}, {{0, 0}, {1, 0}, {1, 1}, {0, 1}},
-};
+constexpr std::array<Face, 6> positions{
+    {// front ACD, ABC (positive z)
+     {FaceDirection::front, {A, B, C, D}, {0, 2, 3, 0, 1, 2}},
+     // right BGC, BFG (positive x)
+     {FaceDirection::right, {F, B, C, G}, {1, 3, 2, 1, 0, 3}},
+     // left AHE, ADH (negative x)
+     {FaceDirection::left, {E, A, D, H}, {1, 3, 0, 1, 2, 3}},
+     // back FHG, FEH (negative z)
+     {FaceDirection::back, {E, F, G, H}, {1, 3, 2, 1, 0, 3}},
+     // bottom AEF, AFB (negative y)
+     {FaceDirection::bottom, {E, A, B, F}, {1, 0, 3, 1, 3, 2}},
+     // top DCG, DGH (positive y)
+     {FaceDirection::top, {H, D, C, G}, {1, 2, 3, 1, 3, 0}}}};
 
 // the entire texture sample is 1 "logical" unit wide. It is split in 16 by
 // 16 tiles, each a square 1/16 = 0.0625 units wide
@@ -78,7 +60,7 @@ CubeTex::CubeTex(const int front, const int right, const int left,
 
 Cube::Cube(const float x, const float y, const float z, const int ix,
            const int iy, const int iz, const CubeTex &tex)
-    : x(x), y(y), z(z), ix(ix), iy(iy), iz(iz), tex(tex) {}
+    : ix(ix), iy(iy), iz(iz), x(x), y(y), z(z), tex(tex) {}
 
 glm::vec3 Cube::position() const { return glm::vec3{x, y, z}; }
 glm::ivec3 Cube::iposition() const { return glm::ivec3{ix, iy, iz}; }
