@@ -3,7 +3,7 @@
 
 #include <unordered_set>
 
-constexpr int CHUNK_RADIUS = 4;
+constexpr int CHUNK_RADIUS = 1;
 
 int map_interval(const double x) {
   const float abs = std::abs(x);
