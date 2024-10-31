@@ -64,7 +64,7 @@ Cube::Cube(const glm::vec3 world_pos, const glm::ivec3 chunk_pos,
 
 void Cube::emit_vertices(std::vector<GLfloat> &vec,
                          const std::vector<FaceDirection> &faces) const {
-  // 5 components: 3 for position, 2 for texture coord
+  // 6 components: 3 for position, 2 for texture coord, 1 for color intensity
   // layout defined in specify_cube_vertex_attributes
   int i = 0;
   for (const Face &face : positions) {
@@ -83,6 +83,9 @@ void Cube::emit_vertices(std::vector<GLfloat> &vec,
       vec.push_back(world_pos.z + .5 * xyz.z);
       vec.push_back(du + (uv.x ? tw : 0));
       vec.push_back(dv + (uv.y ? tw : 0));
+      vec.push_back(face.direction == FaceDirection::front ? 0.7f :
+                    face.direction == FaceDirection::right ? 0.5f :
+                    1.0f);
     }
 
     i++;

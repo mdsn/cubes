@@ -36,6 +36,13 @@ std::unordered_set<glm::ivec2> disk(const glm::ivec2 position,
   return set;
 }
 
+// TODO optimization: instead of constantly releasing 2*RADIUS+1 chunks on every
+//      change and reallocating the SAME AMOUNT OF SPACE just try and reuse the
+//      allocated memory somehow. After all, for a fixed block radius we should
+//      be able to allocate all necessary memory at start and never change it
+//      again!
+//      Chunk Arena, a statically allocated set of pages. The hashmap indexes
+//      into it converting from world-coordinates into arena-coordinates.
 void update_chunks(std::unordered_map<glm::ivec2, Chunk> &chunks,
                    const std::optional<glm::ivec2> previous_chunk,
                    const glm::ivec2 current_chunk) {

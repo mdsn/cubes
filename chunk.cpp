@@ -19,7 +19,7 @@ Chunk::Chunk(const int chunk_x, const int chunk_z) : cubes({}) {
   CubeTex water{202, 202, 202, 202, 202, 202};
   FastNoiseLite noise;
 
-  for (int block_x = 0; block_x < CHUNK_SIZE; block_x++)
+  for (int block_x = 0; block_x < CHUNK_SIZE; block_x++) {
     for (int block_z = 0; block_z < CHUNK_SIZE; block_z++) {
       const int tx = block_x - CHUNK_SIZE / 2;
       const int tz = block_z - CHUNK_SIZE / 2;
@@ -38,6 +38,7 @@ Chunk::Chunk(const int chunk_x, const int chunk_z) : cubes({}) {
         chunk_map[block_x][block_y][block_z] = true;
       }
     }
+  }
 }
 
 constexpr std::array neighbor_directions{
