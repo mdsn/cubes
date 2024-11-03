@@ -28,9 +28,9 @@ class Cube {
   CubeTex tex;
 
 public:
-  const glm::vec3 world_pos;
+  const glm::ivec3 world_pos;
   const glm::ivec3 chunk_pos;
-  Cube(glm::vec3 world_pos, glm::ivec3 chunk_pos, const CubeTex &tex);
+  Cube(glm::ivec3 world_pos, glm::ivec3 chunk_pos, const CubeTex &tex);
   void emit_vertices(std::vector<GLfloat> &vec,
                      const std::vector<FaceDirection> &faces) const;
 };
