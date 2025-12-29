@@ -1,5 +1,6 @@
 #pragma once
 #include "debug.h"
+#include "mesh.h"
 #include "shader.h"
 #include "texture.h"
 #include "vao.h"
@@ -21,7 +22,7 @@ class Renderer {
 public:
   explicit Renderer(glm::vec2 window_size);
 
-  void render_world(const std::vector<GLfloat> &vertices, const glm::mat4 &view,
-                    bool wireframe, bool update_vertices) const;
+  void render_world(const Mesh &mesh, const glm::mat4 &view, bool wireframe,
+                    bool update_vertices) const;
   void render_ui(const Debug &debug) const;
 };

@@ -27,8 +27,8 @@ Renderer::Renderer(const glm::vec2 window_size)
                                             0.0f, -1.0f, 1.0f));
 }
 
-void Renderer::render_world(const std::vector<GLfloat> &vertices,
-                            const glm::mat4 &view, const bool wireframe,
+void Renderer::render_world(const Mesh &mesh, const glm::mat4 &view,
+                            const bool wireframe,
                             const bool update_vertices) const {
   constexpr int VERTEX_DATA_SIZE = 6;
   glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
@@ -37,7 +37,17 @@ void Renderer::render_world(const std::vector<GLfloat> &vertices,
   world_texture.bind();
   world_vao.bind();
   if (update_vertices) {
-    world_vbo.write(vertices.size() * sizeof(GLfloat), vertices.data());
+    std::vector<GLfloat> packed{};
+    packed.reserve(mesh.vertices.size() * VERTEX_DATA_SIZE);
+    for (const Vertex &vertex : mesh.vertices) {
+      packed.push_back(vertex.position.x);
+      packed.push_back(vertex.position.y);
+      packed.push_back(vertex.position.z);
+      packed.push_back(vertex.uv.x);
+      packed.push_back(vertex.uv.y);
+      packed.push_back(vertex.intensity);
+    }
+    world_vbo.write(packed.size() * sizeof(GLfloat), packed.data());
     world_shader.attr("position", 3, GL_FLOAT, VERTEX_DATA_SIZE * sizeof(float),
                       nullptr);
     world_shader.attr("texcoord", 2, GL_FLOAT, VERTEX_DATA_SIZE * sizeof(float),
@@ -46,7 +56,7 @@ void Renderer::render_world(const std::vector<GLfloat> &vertices,
                       VERTEX_DATA_SIZE * sizeof(float),
                       reinterpret_cast<void *>(5 * sizeof(float)));
   }
-  glDrawArrays(GL_TRIANGLES, 0, vertices.size() / VERTEX_DATA_SIZE);
+  glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
   VAO::unbind();
 }
 

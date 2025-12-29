@@ -16,7 +16,7 @@ public:
       chunk_map{};
 
   Chunk(ChunkMap &chunks, int chunk_x, int chunk_z);
-  void emit_cubes(std::vector<GLfloat> &vec) const;
+  const std::vector<Cube> &cube_list() const;
 
 private:
   static bool within_local_bounds(glm::ivec3 pos);

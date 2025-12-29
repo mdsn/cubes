@@ -75,7 +75,7 @@ void update() {
 
 void render() {
   clear_screen();
-  st.renderer->render_world(st.world.vertices(), st.camera.view(),
+  st.renderer->render_world(st.world.mesh(), st.camera.view(),
                             st.render_wireframe, st.world.chunk_changed);
   st.world.finished_rendering();
   st.renderer->render_ui(st.debug);

@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "coords.h"
+#include "mesher.h"
 
 constexpr int CHUNK_RADIUS = 1;
 
@@ -65,11 +66,40 @@ void update_chunks(std::unordered_map<glm::ivec2, Chunk> &chunks,
   }
 }
 
-void emit_vertices(const std::unordered_map<glm::ivec2, Chunk> &chunks,
-                   std::vector<GLfloat> &vertices) {
-  vertices.clear();
-  for (auto &[pos, chunk] : chunks)
-    chunk.emit_cubes(vertices);
+bool within_local_bounds(const glm::ivec3 pos) {
+  return pos.x >= 0 && pos.x < CHUNK_SIZE && pos.y >= 0 &&
+         pos.y < CHUNK_HEIGHT && pos.z >= 0 && pos.z < CHUNK_SIZE;
+}
+
+bool is_solid_at_world(const std::unordered_map<glm::ivec2, Chunk> &chunks,
+                       const glm::ivec3 world_pos) {
+  const glm::ivec2 chunk_pos = coords::world_to_chunk_pos(world_pos);
+  auto it = chunks.find(chunk_pos);
+  if (it == chunks.end()) {
+    // Treat missing chunks as air so faces render until neighbors load.
+    // TODO trigger boundary remesh when new chunks arrive.
+    return false;
+  }
+
+  const glm::ivec3 local_pos = coords::world_to_local_pos(world_pos);
+  if (!within_local_bounds(local_pos))
+    return false;
+
+  return it->second.chunk_map[local_pos.x][local_pos.y][local_pos.z];
+}
+
+void emit_meshes(const std::unordered_map<glm::ivec2, Chunk> &chunks,
+                 Mesh &mesh) {
+  mesh.vertices.clear();
+  mesh.indices.clear();
+  auto query = [&chunks](const glm::ivec3 pos) {
+    return is_solid_at_world(chunks, pos);
+  };
+  for (const auto &[pos, chunk] : chunks) {
+    Mesh chunk_mesh = build_chunk_mesh(chunk, pos, query);
+    mesh.vertices.insert(mesh.vertices.end(), chunk_mesh.vertices.begin(),
+                         chunk_mesh.vertices.end());
+  }
 }
 
 World::World(const glm::vec3 start_position) { set_position(start_position); }
@@ -80,11 +110,11 @@ void World::set_position(const glm::vec3 new_pos) {
   if (prev_chunk != current_chunk) {
     chunk_changed = true; // signals the renderer to upload the data to the gpu
     update_chunks(chunks, prev_chunk, current_chunk);
-    emit_vertices(chunks, chunk_vertices);
+    emit_meshes(chunks, chunk_mesh);
     prev_chunk = current_chunk;
   }
 }
 
 void World::finished_rendering() { chunk_changed = false; }
 
-const std::vector<GLfloat> &World::vertices() const { return chunk_vertices; }
+const Mesh &World::mesh() const { return chunk_mesh; }

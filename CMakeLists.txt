@@ -14,6 +14,9 @@ add_executable(brix main.cpp
         chunk.h
         chunk_constants.h
         coords.h
+        mesh.h
+        mesher.cpp
+        mesher.h
         shader.cpp
         shader.h
         camera.cpp

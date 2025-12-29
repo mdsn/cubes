@@ -1,7 +1,6 @@
 #include "chunk.h"
 
 #include "FastNoiseLite.h"
-#include "coords.h"
 
 float get_noise(const FastNoiseLite &noise, const float x, const float y) {
   return noise.GetNoise(x, y) / 2.0 + 0.5;
@@ -42,58 +41,4 @@ Chunk::Chunk(ChunkMap &chunks, const int chunk_x, const int chunk_z)
   }
 }
 
-struct Neighbor {
-  FaceDirection face;
-  glm::ivec3 world_pos;
-};
-
-constexpr std::array neighbor_directions{
-    Neighbor{FaceDirection::front, glm::ivec3{0, 0, 1}},
-    Neighbor{FaceDirection::right, glm::ivec3{1, 0, 0}},
-    Neighbor{FaceDirection::left, glm::ivec3{-1, 0, 0}},
-    Neighbor{FaceDirection::back, glm::ivec3{0, 0, -1}},
-    Neighbor{FaceDirection::bottom, glm::ivec3{0, -1, 0}},
-    Neighbor{FaceDirection::top, glm::ivec3{0, 1, 0}},
-};
-
-std::vector<Neighbor> neighboring_cube_positions(const Cube &cube) {
-  std::vector<Neighbor> positions{};
-  for (auto &[face, wpos] : neighbor_directions) {
-    positions.emplace_back(Neighbor{face, cube.world_pos + wpos});
-  }
-  return positions;
-}
-
-bool Chunk::within_local_bounds(const glm::ivec3 pos) {
-  return pos.x >= 0 && pos.x < CHUNK_SIZE && pos.y >= 0 &&
-         pos.y < CHUNK_HEIGHT && pos.z >= 0 && pos.z < CHUNK_SIZE;
-}
-
-bool Chunk::is_solid_at_world(const ChunkMap &chunks,
-                              const glm::ivec3 world_pos) {
-  const glm::ivec2 chunk_pos = coords::world_to_chunk_pos(world_pos);
-  auto it = chunks.find(chunk_pos);
-  if (it == chunks.end()) {
-    // Treat missing chunks as air so faces render until neighbors load.
-    // TODO trigger boundary remesh when new chunks arrive.
-    return false;
-  }
-
-  const glm::ivec3 local_pos = coords::world_to_local_pos(world_pos);
-  if (!within_local_bounds(local_pos))
-    return false;
-
-  return it->second.chunk_map[local_pos.x][local_pos.y][local_pos.z];
-}
-
-void Chunk::emit_cubes(std::vector<GLfloat> &vec) const {
-  for (const Cube &cube : cubes) {
-    std::vector<FaceDirection> faces{};
-    for (auto &[face, wpos] : neighboring_cube_positions(cube)) {
-      if (!is_solid_at_world(chunks, wpos)) {
-        faces.push_back(face);
-      }
-    }
-    cube.emit_vertices(vec, faces);
-  }
-}
+const std::vector<Cube> &Chunk::cube_list() const { return cubes; }

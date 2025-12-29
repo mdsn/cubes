@@ -6,10 +6,11 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp" // hash ivec2
 #include "chunk.h"
+#include "mesh.h"
 
 class World {
   glm::vec3 player_position;
-  std::vector<GLfloat> chunk_vertices;
+  Mesh chunk_mesh;
   std::unordered_map<glm::ivec2, Chunk> chunks;
 
 public:
@@ -20,5 +21,5 @@ public:
   explicit World(glm::vec3 start_position);
   void set_position(glm::vec3 new_pos);
   void finished_rendering();
-  const std::vector<GLfloat> &vertices() const;
+  const Mesh &mesh() const;
 };
