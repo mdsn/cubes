@@ -1,6 +1,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "renderer.h"
 #include "font.h"
+#include "frustum.h"
+#include "chunk_constants.h"
 
 void clear_screen() {
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -17,9 +19,9 @@ Renderer::Renderer(const glm::vec2 window_size)
 
   world_shader.use();
   world_shader.set_int("fogletexture", 0);
-  world_shader.set_mat4fv(
-      "proj", glm::perspective(glm::radians(45.0f),
-                               window_size.x / window_size.y, 1.0f, 100.0f));
+  world_proj = glm::perspective(glm::radians(45.0f),
+                                window_size.x / window_size.y, 1.0f, 100.0f);
+  world_shader.set_mat4fv("proj", world_proj);
 
   font_shader.use();
   font_shader.set_int("font", 0);
@@ -27,8 +29,9 @@ Renderer::Renderer(const glm::vec2 window_size)
                                             0.0f, -1.0f, 1.0f));
 }
 
-void Renderer::render_world(const Mesh &mesh, const glm::mat4 &view,
-                            const bool wireframe,
+void Renderer::render_world(const Mesh &mesh,
+                            const std::vector<ChunkDraw> &draws,
+                            const glm::mat4 &view, const bool wireframe,
                             const bool update_vertices) const {
   constexpr int VERTEX_DATA_SIZE = 6;
   glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
@@ -58,8 +61,22 @@ void Renderer::render_world(const Mesh &mesh, const glm::mat4 &view,
                       VERTEX_DATA_SIZE * sizeof(float),
                       reinterpret_cast<void *>(5 * sizeof(float)));
   }
-  glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.indices.size()),
-                 GL_UNSIGNED_INT, nullptr);
+  const Frustum frustum = extract_frustum(world_proj * view);
+  for (const ChunkDraw &draw : draws) {
+    const glm::vec3 min{
+        static_cast<float>(draw.chunk_pos.x * CHUNK_SIZE), 0.0f,
+        static_cast<float>(draw.chunk_pos.y * CHUNK_SIZE)};
+    const glm::vec3 max{
+        static_cast<float>((draw.chunk_pos.x + 1) * CHUNK_SIZE),
+        static_cast<float>(CHUNK_HEIGHT),
+        static_cast<float>((draw.chunk_pos.y + 1) * CHUNK_SIZE)};
+    if (!intersects(frustum, AABB{min, max}))
+      continue;
+    const void *offset =
+        reinterpret_cast<void *>(draw.index_offset * sizeof(uint32_t));
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(draw.index_count),
+                   GL_UNSIGNED_INT, offset);
+  }
   VAO::unbind();
 }
 

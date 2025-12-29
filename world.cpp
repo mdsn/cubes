@@ -89,9 +89,10 @@ bool is_solid_at_world(const std::unordered_map<glm::ivec2, Chunk> &chunks,
 }
 
 void emit_meshes(const std::unordered_map<glm::ivec2, Chunk> &chunks,
-                 Mesh &mesh) {
+                 Mesh &mesh, std::vector<ChunkDraw> &draws) {
   mesh.vertices.clear();
   mesh.indices.clear();
+  draws.clear();
   auto query = [&chunks](const glm::ivec3 pos) {
     return is_solid_at_world(chunks, pos);
   };
@@ -99,11 +100,13 @@ void emit_meshes(const std::unordered_map<glm::ivec2, Chunk> &chunks,
     Mesh chunk_mesh = build_chunk_mesh(chunk, pos, query);
     const uint32_t base_index =
         static_cast<uint32_t>(mesh.vertices.size());
+    const size_t index_offset = mesh.indices.size();
     mesh.vertices.insert(mesh.vertices.end(), chunk_mesh.vertices.begin(),
                          chunk_mesh.vertices.end());
     mesh.indices.reserve(mesh.indices.size() + chunk_mesh.indices.size());
     for (const uint32_t idx : chunk_mesh.indices)
       mesh.indices.push_back(base_index + idx);
+    draws.push_back(ChunkDraw{pos, index_offset, chunk_mesh.indices.size()});
   }
 }
 
@@ -115,7 +118,7 @@ void World::set_position(const glm::vec3 new_pos) {
   if (prev_chunk != current_chunk) {
     chunk_changed = true; // signals the renderer to upload the data to the gpu
     update_chunks(chunks, prev_chunk, current_chunk);
-    emit_meshes(chunks, chunk_mesh);
+    emit_meshes(chunks, chunk_mesh, chunk_draws);
     prev_chunk = current_chunk;
   }
 }
@@ -123,3 +126,5 @@ void World::set_position(const glm::vec3 new_pos) {
 void World::finished_rendering() { chunk_changed = false; }
 
 const Mesh &World::mesh() const { return chunk_mesh; }
+
+const std::vector<ChunkDraw> &World::draws() const { return chunk_draws; }

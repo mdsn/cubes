@@ -1,15 +1,18 @@
 #define GLM_ENABLE_EXPERIMENTAL
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <algorithm>
 #include <array>
 #include <unordered_set>
+#include <cmath>
 
 #include <glm/gtx/hash.hpp>
 
 #include "chunk_constants.h"
 #include "coords.h"
 #include "mesher.h"
+#include "frustum.h"
 
 struct FakeWorldQuery {
   std::unordered_set<glm::ivec3> solid;
@@ -114,4 +117,20 @@ TEST_CASE("indexed mesh output for a single cube") {
                                        mesh.indices.end());
   REQUIRE(max_it != mesh.indices.end());
   REQUIRE(*max_it < mesh.vertices.size());
+}
+
+TEST_CASE("frustum extraction and AABB intersection") {
+  const glm::mat4 identity{1.0f};
+  const Frustum frustum = extract_frustum(identity);
+
+  const AABB inside{{-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}};
+  const AABB outside{{2.0f, 2.0f, 2.0f}, {3.0f, 3.0f, 3.0f}};
+
+  REQUIRE(intersects(frustum, inside));
+  REQUIRE_FALSE(intersects(frustum, outside));
+
+  for (const Plane &plane : frustum.planes) {
+    const float len = std::sqrt(glm::dot(plane.normal, plane.normal));
+    REQUIRE(len == Catch::Approx(1.0f));
+  }
 }

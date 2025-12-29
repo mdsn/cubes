@@ -21,6 +21,8 @@ add_executable(brix main.cpp
         shader.h
         ebo.cpp
         ebo.h
+        frustum.cpp
+        frustum.h
         camera.cpp
         camera.h
         vbo.cpp
@@ -56,7 +58,7 @@ include(Catch)
 if (BUILD_TESTING)
   add_executable(brix_tests tests/coords_tests.cpp)
   target_include_directories(brix_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-  target_sources(brix_tests PRIVATE cube.cpp mesher.cpp chunk.cpp)
+  target_sources(brix_tests PRIVATE cube.cpp mesher.cpp chunk.cpp frustum.cpp)
   target_link_libraries(brix_tests PRIVATE Catch2::Catch2WithMain glm::glm)
   target_compile_features(brix_tests PRIVATE cxx_std_23)
   target_compile_options(brix_tests PRIVATE -Wall -Wextra)

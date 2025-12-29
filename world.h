@@ -8,9 +8,16 @@
 #include "chunk.h"
 #include "mesh.h"
 
+struct ChunkDraw {
+  glm::ivec2 chunk_pos;
+  size_t index_offset;
+  size_t index_count;
+};
+
 class World {
   glm::vec3 player_position;
   Mesh chunk_mesh;
+  std::vector<ChunkDraw> chunk_draws;
   std::unordered_map<glm::ivec2, Chunk> chunks;
 
 public:
@@ -22,4 +29,5 @@ public:
   void set_position(glm::vec3 new_pos);
   void finished_rendering();
   const Mesh &mesh() const;
+  const std::vector<ChunkDraw> &draws() const;
 };
