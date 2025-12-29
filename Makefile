@@ -4,7 +4,9 @@ BUILD_TYPE ?= Debug
 
 MAKE := make
 CMAKE := cmake
+GENERATOR := Ninja
 CMAKE_FLAGS := \
+	-G "$(GENERATOR)" \
 	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
 ifndef VCPKG_ROOT
