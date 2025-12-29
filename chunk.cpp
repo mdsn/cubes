@@ -2,20 +2,6 @@
 
 #include "FastNoiseLite.h"
 
-// XXX these two functions copy pasted from world.cpp
-int _map_interval(const double x) {
-  const float abs = std::abs(x);
-  if (abs < 8.0)
-    return 0;
-  const int res = 1 + static_cast<int>(abs - 8) / 16;
-  return x >= 0 ? res : -res;
-}
-
-// XXX these two functions copy pasted from world.cpp
-glm::ivec2 _pos_to_chunk(const glm::vec3 pos) {
-  return glm::ivec2{_map_interval(pos.x), _map_interval(pos.z)};
-}
-
 float get_noise(const FastNoiseLite &noise, const float x, const float y) {
   return noise.GetNoise(x, y) / 2.0 + 0.5;
 }
@@ -60,79 +46,75 @@ Chunk::Chunk(ChunkMap &chunks, const int chunk_x, const int chunk_z)
 
 struct Neighbor {
   FaceDirection face;
-  glm::ivec3 chunk_pos;
   glm::ivec3 world_pos;
 };
 
 constexpr std::array neighbor_directions{
-    Neighbor{FaceDirection::front, glm::ivec3{0, 0, 1}, glm::ivec3{0, 0, 1}},
-    Neighbor{FaceDirection::right, glm::ivec3{1, 0, 0}, glm::ivec3{1, 0, 0}},
-    Neighbor{FaceDirection::left, glm::ivec3{-1, 0, 0}, glm::ivec3{-1, 0, 0}},
-    Neighbor{FaceDirection::back, glm::ivec3{0, 0, -1}, glm::ivec3{0, 0, -1}},
-    Neighbor{FaceDirection::bottom, glm::ivec3{0, -1, 0}, glm::ivec3{0, -1, 0}},
-    Neighbor{FaceDirection::top, glm::ivec3{0, 1, 0}, glm::ivec3{0, 1, 0}},
+    Neighbor{FaceDirection::front, glm::ivec3{0, 0, 1}},
+    Neighbor{FaceDirection::right, glm::ivec3{1, 0, 0}},
+    Neighbor{FaceDirection::left, glm::ivec3{-1, 0, 0}},
+    Neighbor{FaceDirection::back, glm::ivec3{0, 0, -1}},
+    Neighbor{FaceDirection::bottom, glm::ivec3{0, -1, 0}},
+    Neighbor{FaceDirection::top, glm::ivec3{0, 1, 0}},
 };
 
 std::vector<Neighbor> neighboring_cube_positions(const Cube &cube) {
   std::vector<Neighbor> positions{};
-  for (auto &[face, cpos, wpos] : neighbor_directions) {
-    positions.emplace_back(
-        Neighbor{face, cube.chunk_pos + cpos, cube.world_pos + wpos});
+  for (auto &[face, wpos] : neighbor_directions) {
+    positions.emplace_back(Neighbor{face, cube.world_pos + wpos});
   }
   return positions;
 }
 
-bool within_chunk_bounds(glm::ivec3 pos) {
-  return pos.x >= 0 and pos.x < CHUNK_SIZE and pos.y >= 0 and
-         pos.y < CHUNK_SIZE and pos.z >= 0 and pos.z < CHUNK_SIZE;
+int Chunk::floor_div(const int numerator, const int denominator) {
+  const int quotient = numerator / denominator;
+  const int remainder = numerator % denominator;
+  if (remainder != 0 && numerator < 0)
+    return quotient - 1;
+  return quotient;
+}
+
+glm::ivec2 Chunk::world_to_chunk_pos(const glm::ivec3 world_pos) {
+  constexpr int half = CHUNK_SIZE / 2;
+  return glm::ivec2{floor_div(world_pos.x + half, CHUNK_SIZE),
+                    floor_div(world_pos.z + half, CHUNK_SIZE)};
+}
+
+glm::ivec3 Chunk::world_to_local_pos(const glm::ivec3 world_pos) {
+  constexpr int half = CHUNK_SIZE / 2;
+  const glm::ivec2 chunk_pos = world_to_chunk_pos(world_pos);
+  return glm::ivec3{world_pos.x - chunk_pos.x * CHUNK_SIZE + half,
+                    world_pos.y,
+                    world_pos.z - chunk_pos.y * CHUNK_SIZE + half};
+}
+
+bool Chunk::within_local_bounds(const glm::ivec3 pos) {
+  return pos.x >= 0 && pos.x < CHUNK_SIZE && pos.y >= 0 &&
+         pos.y < CHUNK_HEIGHT && pos.z >= 0 && pos.z < CHUNK_SIZE;
+}
+
+bool Chunk::is_solid_at_world(const ChunkMap &chunks,
+                              const glm::ivec3 world_pos) {
+  const glm::ivec2 chunk_pos = world_to_chunk_pos(world_pos);
+  auto it = chunks.find(chunk_pos);
+  if (it == chunks.end()) {
+    // Treat missing chunks as air so faces render until neighbors load.
+    // TODO trigger boundary remesh when new chunks arrive.
+    return false;
+  }
+
+  const glm::ivec3 local_pos = world_to_local_pos(world_pos);
+  if (!within_local_bounds(local_pos))
+    return false;
+
+  return it->second.chunk_map[local_pos.x][local_pos.y][local_pos.z];
 }
 
 void Chunk::emit_cubes(std::vector<GLfloat> &vec) const {
   for (const Cube &cube : cubes) {
     std::vector<FaceDirection> faces{};
-    for (auto &[face, cpos, wpos] : neighboring_cube_positions(cube)) {
-      if (!within_chunk_bounds(cpos)) {
-        // this neighbor cube is in the adjacent chunk--it must be on the
-        // opposite end of the chunk, but sharing the two other coordinates;
-        // which coordinates depends on the direction where the neighbor cube
-        // lies.
-        // TODO instead of _pos_to_chunk, have the chunk Just Know the chunk in
-        // the face direction
-        auto npos = _pos_to_chunk(wpos);
-        auto it = chunks.find(npos);
-
-        if (it == chunks.end()) {
-          // Neighbor chunk missing; treat as air and emit face
-          faces.push_back(face);
-          continue;
-        } else {
-          // Neighbor chunk exists, check if the adjacent block exists.
-          glm::ivec3 neighbor_chunk_pos = cpos;
-          switch (face) {
-          case FaceDirection::left:
-            neighbor_chunk_pos.x = CHUNK_SIZE - 1;
-            break;
-          case FaceDirection::right:
-            neighbor_chunk_pos.x = 0;
-            break;
-          case FaceDirection::front:
-            neighbor_chunk_pos.z = 0;
-            break;
-          case FaceDirection::back:
-            neighbor_chunk_pos.z = CHUNK_SIZE - 1;
-            break;
-          case FaceDirection::top: // ???
-          case FaceDirection::bottom:
-          default:
-            break;
-          }
-
-          if (!it->second.chunk_map[neighbor_chunk_pos.x][neighbor_chunk_pos.y]
-                                   [neighbor_chunk_pos.z]) {
-            faces.push_back(face);
-          }
-        }
-      } else if (!chunk_map[cpos.x][cpos.y][cpos.z]) {
+    for (auto &[face, wpos] : neighboring_cube_positions(cube)) {
+      if (!is_solid_at_world(chunks, wpos)) {
         faces.push_back(face);
       }
     }

@@ -19,4 +19,12 @@ public:
 
   Chunk(ChunkMap &chunks, int chunk_x, int chunk_z);
   void emit_cubes(std::vector<GLfloat> &vec) const;
+
+private:
+  static int floor_div(int numerator, int denominator);
+  static glm::ivec2 world_to_chunk_pos(glm::ivec3 world_pos);
+  static glm::ivec3 world_to_local_pos(glm::ivec3 world_pos);
+  static bool within_local_bounds(glm::ivec3 pos);
+  static bool is_solid_at_world(const ChunkMap &chunks,
+                                glm::ivec3 world_pos);
 };
