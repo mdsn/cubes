@@ -2,7 +2,6 @@
 #include "renderer.h"
 #include "font.h"
 #include "frustum.h"
-#include "chunk_constants.h"
 
 void clear_screen() {
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -63,14 +62,7 @@ void Renderer::render_world(const Mesh &mesh,
   }
   const Frustum frustum = extract_frustum(world_proj * view);
   for (const ChunkDraw &draw : draws) {
-    const glm::vec3 min{
-        static_cast<float>(draw.chunk_pos.x * CHUNK_SIZE), 0.0f,
-        static_cast<float>(draw.chunk_pos.y * CHUNK_SIZE)};
-    const glm::vec3 max{
-        static_cast<float>((draw.chunk_pos.x + 1) * CHUNK_SIZE),
-        static_cast<float>(CHUNK_HEIGHT),
-        static_cast<float>((draw.chunk_pos.y + 1) * CHUNK_SIZE)};
-    if (!intersects(frustum, AABB{min, max}))
+    if (!intersects(frustum, draw.bounds))
       continue;
     const void *offset =
         reinterpret_cast<void *>(draw.index_offset * sizeof(uint32_t));

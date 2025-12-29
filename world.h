@@ -6,13 +6,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp" // hash ivec2
 #include "chunk.h"
+#include "chunk_draw.h"
 #include "mesh.h"
-
-struct ChunkDraw {
-  glm::ivec2 chunk_pos;
-  size_t index_offset;
-  size_t index_count;
-};
 
 class World {
   glm::vec3 player_position;

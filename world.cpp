@@ -101,12 +101,20 @@ void emit_meshes(const std::unordered_map<glm::ivec2, Chunk> &chunks,
     const uint32_t base_index =
         static_cast<uint32_t>(mesh.vertices.size());
     const size_t index_offset = mesh.indices.size();
+    const glm::vec3 min{
+        static_cast<float>(pos.x * CHUNK_SIZE), 0.0f,
+        static_cast<float>(pos.y * CHUNK_SIZE)};
+    const glm::vec3 max{
+        static_cast<float>((pos.x + 1) * CHUNK_SIZE),
+        static_cast<float>(CHUNK_HEIGHT),
+        static_cast<float>((pos.y + 1) * CHUNK_SIZE)};
     mesh.vertices.insert(mesh.vertices.end(), chunk_mesh.vertices.begin(),
                          chunk_mesh.vertices.end());
     mesh.indices.reserve(mesh.indices.size() + chunk_mesh.indices.size());
     for (const uint32_t idx : chunk_mesh.indices)
       mesh.indices.push_back(base_index + idx);
-    draws.push_back(ChunkDraw{pos, index_offset, chunk_mesh.indices.size()});
+    draws.push_back(
+        ChunkDraw{pos, index_offset, chunk_mesh.indices.size(), AABB{min, max}});
   }
 }
 
