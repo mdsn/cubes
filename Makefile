@@ -22,7 +22,7 @@ endif
 CMAKE_FLAGS += -DCMAKE_TOOLCHAIN_FILE=$(VCPKG_TOOLCHAIN)
 CMAKE_CACHE := $(BUILD_DIR)/CMakeCache.txt
 
-.PHONY: all configure build clean rebuild run debug release
+.PHONY: all configure build clean rebuild run debug release test
 
 all: build
 
@@ -48,3 +48,6 @@ debug:
 
 release:
 	$(MAKE) BUILD_TYPE=Release build
+
+test: build
+	ctest --test-dir $(BUILD_DIR) --output-on-failure

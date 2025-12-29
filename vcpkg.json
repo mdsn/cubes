@@ -5,6 +5,7 @@
         "glfw3",
         "glad",
         "soil2",
-        "glm"
+        "glm",
+        "catch2"
     ]
 }

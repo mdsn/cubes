@@ -1,23 +1,11 @@
 #include <algorithm>
-#include <cmath>
 #include "world.h"
 
 #include <unordered_set>
 
+#include "coords.h"
+
 constexpr int CHUNK_RADIUS = 1;
-
-int floor_div(const int numerator, const int denominator) {
-  const int quotient = numerator / denominator;
-  const int remainder = numerator % denominator;
-  if (remainder != 0 && numerator < 0)
-    return quotient - 1;
-  return quotient;
-}
-
-glm::ivec2 pos_to_chunk(const glm::vec3 pos) {
-  return glm::ivec2{floor_div(static_cast<int>(std::floor(pos.x)), CHUNK_SIZE),
-                    floor_div(static_cast<int>(std::floor(pos.z)), CHUNK_SIZE)};
-}
 
 // a square disk around a position
 std::vector<glm::ivec2> neighbors(const glm::ivec2 position, const int layers) {
@@ -88,7 +76,7 @@ World::World(const glm::vec3 start_position) { set_position(start_position); }
 
 void World::set_position(const glm::vec3 new_pos) {
   player_position = new_pos;
-  current_chunk = pos_to_chunk(player_position);
+  current_chunk = coords::pos_to_chunk(player_position);
   if (prev_chunk != current_chunk) {
     chunk_changed = true; // signals the renderer to upload the data to the gpu
     update_chunks(chunks, prev_chunk, current_chunk);

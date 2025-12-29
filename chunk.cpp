@@ -1,7 +1,7 @@
 #include "chunk.h"
 
-#include <cassert>
 #include "FastNoiseLite.h"
+#include "coords.h"
 
 float get_noise(const FastNoiseLite &noise, const float x, const float y) {
   return noise.GetNoise(x, y) / 2.0 + 0.5;
@@ -64,26 +64,6 @@ std::vector<Neighbor> neighboring_cube_positions(const Cube &cube) {
   return positions;
 }
 
-int Chunk::floor_div(const int numerator, const int denominator) {
-  const int quotient = numerator / denominator;
-  const int remainder = numerator % denominator;
-  if (remainder != 0 && numerator < 0)
-    return quotient - 1;
-  return quotient;
-}
-
-glm::ivec2 Chunk::world_to_chunk_pos(const glm::ivec3 world_pos) {
-  return glm::ivec2{floor_div(world_pos.x, CHUNK_SIZE),
-                    floor_div(world_pos.z, CHUNK_SIZE)};
-}
-
-glm::ivec3 Chunk::world_to_local_pos(const glm::ivec3 world_pos) {
-  const glm::ivec2 chunk_pos = world_to_chunk_pos(world_pos);
-  return glm::ivec3{world_pos.x - chunk_pos.x * CHUNK_SIZE,
-                    world_pos.y,
-                    world_pos.z - chunk_pos.y * CHUNK_SIZE};
-}
-
 bool Chunk::within_local_bounds(const glm::ivec3 pos) {
   return pos.x >= 0 && pos.x < CHUNK_SIZE && pos.y >= 0 &&
          pos.y < CHUNK_HEIGHT && pos.z >= 0 && pos.z < CHUNK_SIZE;
@@ -91,7 +71,7 @@ bool Chunk::within_local_bounds(const glm::ivec3 pos) {
 
 bool Chunk::is_solid_at_world(const ChunkMap &chunks,
                               const glm::ivec3 world_pos) {
-  const glm::ivec2 chunk_pos = world_to_chunk_pos(world_pos);
+  const glm::ivec2 chunk_pos = coords::world_to_chunk_pos(world_pos);
   auto it = chunks.find(chunk_pos);
   if (it == chunks.end()) {
     // Treat missing chunks as air so faces render until neighbors load.
@@ -99,12 +79,7 @@ bool Chunk::is_solid_at_world(const ChunkMap &chunks,
     return false;
   }
 
-  const glm::ivec3 local_pos = world_to_local_pos(world_pos);
-  const glm::ivec3 roundtrip_world{
-      chunk_pos.x * CHUNK_SIZE + local_pos.x, world_pos.y,
-      chunk_pos.y * CHUNK_SIZE + local_pos.z};
-  assert(roundtrip_world.x == world_pos.x);
-  assert(roundtrip_world.z == world_pos.z);
+  const glm::ivec3 local_pos = coords::world_to_local_pos(world_pos);
   if (!within_local_bounds(local_pos))
     return false;
 
