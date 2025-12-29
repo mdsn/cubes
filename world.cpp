@@ -97,8 +97,13 @@ void emit_meshes(const std::unordered_map<glm::ivec2, Chunk> &chunks,
   };
   for (const auto &[pos, chunk] : chunks) {
     Mesh chunk_mesh = build_chunk_mesh(chunk, pos, query);
+    const uint32_t base_index =
+        static_cast<uint32_t>(mesh.vertices.size());
     mesh.vertices.insert(mesh.vertices.end(), chunk_mesh.vertices.begin(),
                          chunk_mesh.vertices.end());
+    mesh.indices.reserve(mesh.indices.size() + chunk_mesh.indices.size());
+    for (const uint32_t idx : chunk_mesh.indices)
+      mesh.indices.push_back(base_index + idx);
   }
 }
 

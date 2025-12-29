@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "vao.h"
 #include "vbo.h"
+#include "ebo.h"
 
 void clear_screen();
 
@@ -13,6 +14,7 @@ class Renderer {
   Texture world_texture;
   VAO world_vao;
   VBO world_vbo;
+  EBO world_ebo;
 
   Shader font_shader;
   Texture font_texture;

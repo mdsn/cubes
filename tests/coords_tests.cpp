@@ -1,6 +1,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <array>
 #include <unordered_set>
 
@@ -8,6 +9,7 @@
 
 #include "chunk_constants.h"
 #include "coords.h"
+#include "mesher.h"
 
 struct FakeWorldQuery {
   std::unordered_set<glm::ivec3> solid;
@@ -96,4 +98,20 @@ TEST_CASE("meshing face counts for simple layouts") {
   query.add({0, 0, 0});
   query.add({0, 1, 0});
   REQUIRE(count_visible_faces(query) == 10);
+}
+
+TEST_CASE("indexed mesh output for a single cube") {
+  CubeTex tex{0, 0, 0, 0, 0, 0};
+  std::vector<Cube> cubes{
+      Cube{glm::ivec3{0, 0, 0}, glm::ivec3{0, 0, 0}, tex}};
+  auto is_solid = [&](const glm::ivec3 pos) {
+    return pos == glm::ivec3{0, 0, 0};
+  };
+  Mesh mesh = build_mesh_from_cubes(cubes, is_solid);
+  REQUIRE(mesh.vertices.size() == 24);
+  REQUIRE(mesh.indices.size() == 36);
+  const auto max_it = std::max_element(mesh.indices.begin(),
+                                       mesh.indices.end());
+  REQUIRE(max_it != mesh.indices.end());
+  REQUIRE(*max_it < mesh.vertices.size());
 }

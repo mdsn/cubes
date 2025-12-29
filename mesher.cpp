@@ -60,20 +60,28 @@ constexpr float kTileWidth{0.0625f};
 Mesh build_chunk_mesh(const Chunk &chunk, const glm::ivec2 chunk_pos,
                       const std::function<bool(glm::ivec3)> &is_solid_at_world) {
   static_cast<void>(chunk_pos);
+  return build_mesh_from_cubes(chunk.cube_list(), is_solid_at_world);
+}
+
+Mesh build_mesh_from_cubes(
+    const std::vector<Cube> &cubes,
+    const std::function<bool(glm::ivec3)> &is_solid_at_world) {
   Mesh mesh{};
-  for (const Cube &cube : chunk.cube_list()) {
+  for (const Cube &cube : cubes) {
     const CubeTex &tex = cube.texture();
     int face_index = 0;
     for (const Face &face : kFaces) {
       const glm::ivec3 neighbor_world = cube.world_pos + face.neighbor_offset;
       if (!is_solid_at_world(neighbor_world)) {
-        for (int idx : face.indices) {
-          const int tx{tex.t[face_index] % 16};
-          const int ty{tex.t[face_index] / 16};
-          const float du{kTileWidth * tx};
-          const float dv{kTileWidth * ty};
-          const glm::vec3 xyz = face.vertices[idx];
-          const glm::ivec2 uv = face.texture[idx];
+        const uint32_t base_index =
+            static_cast<uint32_t>(mesh.vertices.size());
+        const int tx{tex.t[face_index] % 16};
+        const int ty{tex.t[face_index] / 16};
+        const float du{kTileWidth * tx};
+        const float dv{kTileWidth * ty};
+        for (int i = 0; i < 4; i++) {
+          const glm::vec3 xyz = face.vertices[i];
+          const glm::ivec2 uv = face.texture[i];
           mesh.vertices.push_back(Vertex{
               glm::vec3{cube.world_pos.x + 0.5f * xyz.x,
                         cube.world_pos.y + 0.5f * xyz.y,
@@ -82,6 +90,10 @@ Mesh build_chunk_mesh(const Chunk &chunk, const glm::ivec2 chunk_pos,
                         dv + (uv.y ? kTileWidth : 0.0f)},
               face_intensity(face.direction),
           });
+        }
+        for (int idx : face.indices) {
+          mesh.indices.push_back(base_index +
+                                 static_cast<uint32_t>(idx));
         }
       }
       face_index++;

@@ -48,6 +48,8 @@ void Renderer::render_world(const Mesh &mesh, const glm::mat4 &view,
       packed.push_back(vertex.intensity);
     }
     world_vbo.write(packed.size() * sizeof(GLfloat), packed.data());
+    world_ebo.write(mesh.indices.size() * sizeof(uint32_t),
+                    mesh.indices.data());
     world_shader.attr("position", 3, GL_FLOAT, VERTEX_DATA_SIZE * sizeof(float),
                       nullptr);
     world_shader.attr("texcoord", 2, GL_FLOAT, VERTEX_DATA_SIZE * sizeof(float),
@@ -56,7 +58,8 @@ void Renderer::render_world(const Mesh &mesh, const glm::mat4 &view,
                       VERTEX_DATA_SIZE * sizeof(float),
                       reinterpret_cast<void *>(5 * sizeof(float)));
   }
-  glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
+  glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.indices.size()),
+                 GL_UNSIGNED_INT, nullptr);
   VAO::unbind();
 }
 
