@@ -99,7 +99,14 @@ void Chunk::emit_cubes(std::vector<GLfloat> &vec) const {
         // TODO instead of _pos_to_chunk, have the chunk Just Know the chunk in
         // the face direction
         auto npos = _pos_to_chunk(wpos);
-        if (auto it = chunks.find(npos); it != chunks.end()) {
+        auto it = chunks.find(npos);
+
+        if (it == chunks.end()) {
+          // Neighbor chunk missing; treat as air and emit face
+          faces.push_back(face);
+          continue;
+        } else {
+          // Neighbor chunk exists, check if the adjacent block exists.
           glm::ivec3 neighbor_chunk_pos = cpos;
           switch (face) {
           case FaceDirection::left:
@@ -109,10 +116,10 @@ void Chunk::emit_cubes(std::vector<GLfloat> &vec) const {
             neighbor_chunk_pos.x = 0;
             break;
           case FaceDirection::front:
-            neighbor_chunk_pos.z = CHUNK_SIZE - 1;
+            neighbor_chunk_pos.z = 0;
             break;
           case FaceDirection::back:
-            neighbor_chunk_pos.z = 0;
+            neighbor_chunk_pos.z = CHUNK_SIZE - 1;
             break;
           case FaceDirection::top: // ???
           case FaceDirection::bottom:
