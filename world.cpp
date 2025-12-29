@@ -56,7 +56,7 @@ void update_chunks(std::unordered_map<glm::ivec2, Chunk> &chunks,
         auto pos = glm::ivec2{erase_line, current_chunk.y + z};
         chunks.erase(pos);
         pos.x = emplace_line;
-        chunks.emplace(pos, Chunk{pos.x, pos.y});
+        chunks.emplace(pos, Chunk{chunks, pos.x, pos.y});
       }
     } else { // moving in z direction
       const int erase_line = current_chunk.y - direction.y * (CHUNK_RADIUS + 1);
@@ -65,13 +65,13 @@ void update_chunks(std::unordered_map<glm::ivec2, Chunk> &chunks,
         auto pos = glm::ivec2{current_chunk.x + x, erase_line};
         chunks.erase(pos);
         pos.y = emplace_line;
-        chunks.emplace(pos, Chunk{pos.x, pos.y});
+        chunks.emplace(pos, Chunk{chunks, pos.x, pos.y});
       }
     }
   } else {
     chunks.clear();
     for (const auto &coord : neighbors(current_chunk, CHUNK_RADIUS))
-      chunks.emplace(coord, Chunk{coord.x, coord.y});
+      chunks.emplace(coord, Chunk{chunks, coord.x, coord.y});
   }
 }
 

@@ -12,7 +12,7 @@ constexpr float WINDOW_WIDTH{1400.0};
 constexpr float WINDOW_HEIGHT{900.0};
 const char *WINDOW_TITLE{"BRIX"};
 
-constexpr glm::vec3 INITIAL_POSITION{glm::vec3{0, 15, 0}};
+constexpr glm::vec3 INITIAL_POSITION{glm::vec3{-5, 11, -9}};
 
 // All global state
 struct State {
