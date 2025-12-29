@@ -1,20 +1,22 @@
 #include <algorithm>
+#include <cmath>
 #include "world.h"
 
 #include <unordered_set>
 
 constexpr int CHUNK_RADIUS = 1;
 
-int map_interval(const double x) {
-  const float abs = std::abs(x);
-  if (abs < 8.0)
-    return 0;
-  const int res = 1 + static_cast<int>(abs - 8) / 16;
-  return x >= 0 ? res : -res;
+int floor_div(const int numerator, const int denominator) {
+  const int quotient = numerator / denominator;
+  const int remainder = numerator % denominator;
+  if (remainder != 0 && numerator < 0)
+    return quotient - 1;
+  return quotient;
 }
 
 glm::ivec2 pos_to_chunk(const glm::vec3 pos) {
-  return glm::ivec2{map_interval(pos.x), map_interval(pos.z)};
+  return glm::ivec2{floor_div(static_cast<int>(std::floor(pos.x)), CHUNK_SIZE),
+                    floor_div(static_cast<int>(std::floor(pos.z)), CHUNK_SIZE)};
 }
 
 // a square disk around a position

@@ -1,5 +1,6 @@
 #include "chunk.h"
 
+#include <cassert>
 #include "FastNoiseLite.h"
 
 float get_noise(const FastNoiseLite &noise, const float x, const float y) {
@@ -23,12 +24,9 @@ Chunk::Chunk(ChunkMap &chunks, const int chunk_x, const int chunk_z)
 
   for (int block_x = 0; block_x < CHUNK_SIZE; block_x++) {
     for (int block_z = 0; block_z < CHUNK_SIZE; block_z++) {
-      // transform xz to put the middle of the chunk at the center
-      const int tx = block_x - CHUNK_SIZE / 2;
-      const int tz = block_z - CHUNK_SIZE / 2;
       // world coordinates across all chunks
-      const int _x = chunk_x * CHUNK_SIZE + tx;
-      const int _z = chunk_z * CHUNK_SIZE + tz;
+      const int _x = chunk_x * CHUNK_SIZE + block_x;
+      const int _z = chunk_z * CHUNK_SIZE + block_z;
       const int _y = column_height(noise, _x, _z);
 
       for (int block_y = 0; block_y < CHUNK_SIZE && block_y <= _y; block_y++) {
@@ -75,17 +73,15 @@ int Chunk::floor_div(const int numerator, const int denominator) {
 }
 
 glm::ivec2 Chunk::world_to_chunk_pos(const glm::ivec3 world_pos) {
-  constexpr int half = CHUNK_SIZE / 2;
-  return glm::ivec2{floor_div(world_pos.x + half, CHUNK_SIZE),
-                    floor_div(world_pos.z + half, CHUNK_SIZE)};
+  return glm::ivec2{floor_div(world_pos.x, CHUNK_SIZE),
+                    floor_div(world_pos.z, CHUNK_SIZE)};
 }
 
 glm::ivec3 Chunk::world_to_local_pos(const glm::ivec3 world_pos) {
-  constexpr int half = CHUNK_SIZE / 2;
   const glm::ivec2 chunk_pos = world_to_chunk_pos(world_pos);
-  return glm::ivec3{world_pos.x - chunk_pos.x * CHUNK_SIZE + half,
+  return glm::ivec3{world_pos.x - chunk_pos.x * CHUNK_SIZE,
                     world_pos.y,
-                    world_pos.z - chunk_pos.y * CHUNK_SIZE + half};
+                    world_pos.z - chunk_pos.y * CHUNK_SIZE};
 }
 
 bool Chunk::within_local_bounds(const glm::ivec3 pos) {
@@ -104,6 +100,11 @@ bool Chunk::is_solid_at_world(const ChunkMap &chunks,
   }
 
   const glm::ivec3 local_pos = world_to_local_pos(world_pos);
+  const glm::ivec3 roundtrip_world{
+      chunk_pos.x * CHUNK_SIZE + local_pos.x, world_pos.y,
+      chunk_pos.y * CHUNK_SIZE + local_pos.z};
+  assert(roundtrip_world.x == world_pos.x);
+  assert(roundtrip_world.z == world_pos.z);
   if (!within_local_bounds(local_pos))
     return false;
 
